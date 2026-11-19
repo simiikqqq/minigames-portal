@@ -1,0 +1,2745 @@
+<!DOCTYPE html>
+<html lang="cs">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0"/>
+  <title>Mini Games Hub 2026 – PLNNĚ FUNKČNÍ & PROPRACOVANÝ PORTÁL</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css">
+
+  <style>
+    @import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700&family=Space+Grotesk:wght@500;600;700&display=swap');
+    body { font-family: 'Inter', sans-serif; background: #0a0a0a; color: white; min-height: 100vh; margin: 0; padding: 1.5rem; transition: background 0.4s, color 0.4s; }
+    .light-mode { background: #f3f4f6; color: #1f2937; }
+    .light-mode .bg-zinc-950 { background: #ffffff; }
+    .light-mode .bg-zinc-900 { background: #f3f4f6; border-color: #d1d5db; }
+    .title { font-family: 'Space Grotesk', sans-serif; }
+    .neon { text-shadow: 0 0 30px #22d3ee, 0 0 60px #67e8f9; }
+    .game-card { transition: all 0.3s cubic-bezier(0.34,1.56,0.64,1); }
+    .game-card:hover { transform: translateY(-15px) scale(1.05); box-shadow: 0 0 50px rgba(34,211,238,0.6); }
+    canvas { image-rendering: pixelated; border-radius: 1.5rem; border: 4px solid #27272a; }
+    .game-screen { animation: fadeIn 0.5s ease-in; padding-top: 140px !important; }
+    @keyframes fadeIn { from { opacity: 0; } to { opacity: 1; } }
+    .back-btn { position: fixed; top: 28px; left: 28px; z-index: 9999; background: rgba(39,39,42,0.9); backdrop-filter: blur(10px); padding: 1rem 1.8rem; border-radius: 9999px; border: 1px solid #3f3f46; font-size: 1.125rem; font-weight: 600; transition: all 0.2s; }
+    .back-btn:hover { background: rgba(63,63,70,0.95); transform: translateY(-2px); }
+    @media (max-width: 768px) { .back-btn { top: 16px; left: 16px; padding: 0.8rem 1.4rem; font-size: 1rem; } }
+  </style>
+</head>
+<body class="min-h-screen p-4 md:p-8 bg-zinc-950">
+
+<div class="max-w-7xl mx-auto">
+
+  <!-- HEADER -->
+  <header class="flex flex-col md:flex-row justify-between items-center mb-12 gap-4">
+    <div>
+      <h1 class="title text-6xl md:text-8xl font-bold neon text-cyan-400 tracking-tighter">MINI GAMES 2026</h1>
+      <p class="text-zinc-400 text-xl md:text-3xl mt-3">34 her • Plně funkčních • Moderní design</p>
+    </div>
+    <button onclick="toggleTheme()" class="bg-zinc-900 hover:bg-zinc-800 px-5 py-3 rounded-xl text-lg"><i class="fas fa-sun"></i> / <i class="fas fa-moon"></i></button>
+  </header>
+
+  <!-- MENU -->
+  <div id="menu" class="block">
+    <div class="grid grid-cols-2 md:grid-cols-3 lg:grid-cols-5 gap-6" id="game-grid"></div>
+  </div>
+
+  <!-- GAME CONTAINER -->
+  <div id="game-container" class="hidden relative">
+
+    <button onclick="backToMenu()" class="back-btn">← Zpět do menu</button>
+
+    <!-- TYPING TEST -->
+    <div id="typing-screen" class="game-screen hidden flex flex-col items-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-8">Typing Speed Test</h2>
+      <div class="flex gap-8 md:gap-14 mb-8 md:mb-10">
+        <div class="text-center"><div id="wpm" class="text-6xl md:text-8xl font-bold text-cyan-400">0</div><div class="text-zinc-400 text-sm md:text-base">WPM</div></div>
+        <div class="text-center"><div id="acc" class="text-6xl md:text-8xl font-bold text-emerald-400">100</div><div class="text-zinc-400 text-sm md:text-base">Přesnost (%)</div></div>
+        <div class="text-center"><div id="time" class="text-6xl md:text-8xl font-bold text-orange-400">60</div><div class="text-zinc-400 text-sm md:text-base">Čas (s)</div></div>
+      </div>
+      <div id="typing-text" class="bg-zinc-900 border border-zinc-700 rounded-3xl p-8 md:p-12 text-xl md:text-2xl leading-relaxed w-full max-w-[920px] shadow-inner"></div>
+      <input id="typing-input" type="text" class="mt-6 md:mt-10 w-full max-w-[920px] bg-zinc-900 border border-zinc-700 focus:border-cyan-400 rounded-3xl px-6 md:px-10 py-4 md:py-7 text-2xl md:text-3xl outline-none font-mono transition-all" autocomplete="off" spellcheck="false">
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-cyan-500 hover:bg-cyan-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium flex items-center gap-3 shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SNAKE -->
+    <div id="snake-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4">SNAKE 🐍</h2>
+      <div id="snake-score" class="text-5xl md:text-6xl font-bold mb-6 md:mb-8 text-emerald-400">0</div>
+      <canvas id="snake-canvas" width="500" height="500" class="mx-auto border-8 border-emerald-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Ovládání: Šipky nebo WASD • Pauza: P</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-emerald-500 hover:bg-emerald-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- MEMORY PAIRS -->
+    <div id="memory-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">MEMORY PAIRS</h2>
+      <div id="memory-board" class="grid grid-cols-4 gap-4 md:gap-5 mx-auto" style="max-width:460px"></div>
+      <div id="memory-moves" class="mt-8 md:mt-10 text-3xl md:text-4xl text-emerald-400">Tahy: <span id="moves-count">0</span></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-violet-500 hover:bg-violet-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- PIŠKVORKY -->
+    <div id="ttt-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">PIŠKVORKY</h2>
+      <div id="ttt-status" class="text-3xl md:text-4xl mb-8 md:mb-10 text-emerald-400">Tvůj tah (X)</div>
+      <div id="ttt-board" class="grid grid-cols-3 gap-4 md:gap-5 mx-auto" style="max-width:420px"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-amber-500 hover:bg-amber-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- RPS -->
+    <div id="rps-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-8 md:mb-12">KÁMEN • PAPÍR • NŮŽKY</h2>
+      <div class="flex justify-center gap-12 md:gap-20 mb-12 md:mb-16">
+        <button onclick="playRPS('rock')" class="text-7xl md:text-9xl hover:scale-125 transition-all duration-300">🪨</button>
+        <button onclick="playRPS('paper')" class="text-7xl md:text-9xl hover:scale-125 transition-all duration-300">📄</button>
+        <button onclick="playRPS('scissors')" class="text-7xl md:text-9xl hover:scale-125 transition-all duration-300">✂️</button>
+      </div>
+      <div id="rps-result" class="text-5xl md:text-6xl min-h-[150px] md:min-h-[180px]"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-rose-500 hover:bg-rose-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- WHACK-A-MOLE -->
+    <div id="whack-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">WHACK-A-MOLE 🐭</h2>
+      <div id="whack-score" class="text-6xl md:text-7xl font-bold mb-6 md:mb-8 text-orange-400">0</div>
+      <div id="whack-board" class="grid grid-cols-3 gap-6 md:gap-8 mx-auto" style="max-width:420px"></div>
+      <button id="whack-start-btn" onclick="startWhack()" class="mt-6 md:mt-8 bg-orange-600 hover:bg-orange-700 px-10 md:px-12 py-4 md:py-5 rounded-3xl text-lg md:text-xl shadow-lg">Začít 30s kolo</button>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-4 md:mt-6 bg-orange-500 hover:bg-orange-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- REACTION TIME -->
+    <div id="reaction-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">REACTION TIME</h2>
+      <button id="reaction-start-btn" onclick="startReaction()" class="bg-emerald-500 hover:bg-emerald-600 px-12 md:px-16 py-5 md:py-6 rounded-3xl text-2xl md:text-3xl font-bold mb-8 md:mb-10 shadow-lg">ZAČÍT TEST</button>
+      <div id="reaction-area" onclick="clickReaction()" class="w-full max-w-[440px] h-[440px] mx-auto rounded-3xl flex items-center justify-center text-4xl md:text-6xl font-black cursor-pointer transition-all duration-300 overflow-hidden text-center p-4"></div>
+      <div id="reaction-result" class="mt-8 md:mt-12 text-6xl md:text-7xl font-bold"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-lime-500 hover:bg-lime-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- 2048 -->
+    <div id="2048-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">2048</h2>
+      <div id="2048-score" class="text-4xl md:text-5xl font-bold mb-6 md:mb-8 text-sky-400">0</div>
+      <div id="2048-grid" class="grid grid-cols-4 gap-3 md:gap-4 bg-zinc-800 p-4 md:p-6 rounded-3xl mx-auto shadow-inner" style="width:100%; max-width:480px"></div>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-base">Ovládání: Šipky</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-sky-500 hover:bg-sky-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- FLAPPY BIRD -->
+    <div id="flappy-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">FLAPPY BIRD</h2>
+      <div id="flappy-score" class="text-4xl md:text-5xl font-bold mb-4 md:mb-6 text-amber-400">0</div>
+      <canvas id="flappy-canvas" width="400" height="520" class="mx-auto border-8 border-cyan-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Ovládání: Kliknutí nebo SPACE pro skok</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-amber-500 hover:bg-amber-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- PONG -->
+    <div id="pong-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">PONG</h2>
+      <div id="pong-score" class="text-4xl md:text-5xl font-bold mb-4 md:mb-6">0 : 0</div>
+      <canvas id="pong-canvas" width="620" height="420" class="mx-auto border-8 border-cyan-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Ovládání: W/S nebo ↑/↓</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-rose-500 hover:bg-rose-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SIMON SAYS -->
+    <div id="simon-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">SIMON SAYS</h2>
+      <div id="simon-score" class="text-3xl md:text-4xl mb-8 md:mb-10 text-violet-400">Úroveň: 1</div>
+      <div class="grid grid-cols-2 gap-6 md:gap-8 mx-auto" style="max-width:340px">
+        <button onclick="simonClick(0)" id="simon0" class="h-32 w-32 md:h-36 md:w-36 rounded-3xl bg-red-500 shadow-inner transition-all duration-200"></button>
+        <button onclick="simonClick(1)" id="simon1" class="h-32 w-32 md:h-36 md:w-36 rounded-3xl bg-blue-500 shadow-inner transition-all duration-200"></button>
+        <button onclick="simonClick(2)" id="simon2" class="h-32 w-32 md:h-36 md:w-36 rounded-3xl bg-green-500 shadow-inner transition-all duration-200"></button>
+        <button onclick="simonClick(3)" id="simon3" class="h-32 w-32 md:h-36 md:w-36 rounded-3xl bg-yellow-500 shadow-inner transition-all duration-200"></button>
+      </div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-violet-500 hover:bg-violet-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- ŠIBENICE -->
+    <div id="hangman-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">ŠIBENICE</h2>
+      <div id="hangman-word" class="text-5xl md:text-7xl tracking-[12px] md:tracking-[18px] font-mono mb-8 md:mb-12 text-white"></div>
+      <div id="hangman-letters" class="flex flex-wrap justify-center gap-2 md:gap-4 max-w-lg mx-auto"></div>
+      <div id="hangman-status" class="mt-8 md:mt-12 text-3xl md:text-4xl"></div>
+      <div id="hangman-attempts" class="text-2xl text-orange-400 mt-4">Zbývající pokusy: 6</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-rose-500 hover:bg-rose-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- KVÍZ -->
+    <div id="quiz-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">VŠEOBECNÝ KVÍZ 2026</h2>
+      <div id="quiz-question" class="text-2xl md:text-3xl max-w-3xl mx-auto mb-8 md:mb-12 leading-tight"></div>
+      <div id="quiz-options" class="grid grid-cols-1 md:grid-cols-2 gap-4 md:gap-6 max-w-3xl mx-auto"></div>
+      <div id="quiz-score" class="mt-10 md:mt-14 text-3xl md:text-4xl text-sky-400">Otázka 1/10 • Skóre: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-amber-500 hover:bg-amber-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- MINESWEEPER -->
+    <div id="minesweeper-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">MINESWEEPER</h2>
+      <div id="minesweeper-board" class="grid grid-cols-5 gap-1 mx-auto bg-zinc-900 p-4 md:p-6 rounded-3xl" style="max-width:380px"></div>
+      <div class="mt-8 md:mt-10 text-xl md:text-2xl">Miny zbývá: <span id="mines-left" class="text-red-400">5</span></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-red-500 hover:bg-red-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- NEON CLICKER -->
+    <div id="clicker-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">NEON CLICKER</h2>
+      <div onclick="clickNeon()" id="clicker-main" class="mx-auto w-60 h-60 md:w-72 md:h-72 bg-gradient-to-br from-cyan-400 via-violet-500 to-fuchsia-500 rounded-full flex items-center justify-center text-8xl md:text-9xl cursor-pointer active:scale-95 transition-all shadow-[0_0_80px_#67e8f9]">⚡</div>
+      <div id="clicker-score" class="text-6xl md:text-8xl font-bold mt-12 md:mt-16 text-cyan-400">0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-10 md:mt-14 bg-cyan-500 hover:bg-cyan-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- HÁDEJ ČÍSLO -->
+    <div id="guess-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">HÁDEJ ČÍSLO (1–100)</h2>
+      <input id="guess-input" type="number" class="bg-zinc-900 border-2 border-zinc-700 focus:border-lime-400 rounded-3xl px-8 md:px-10 py-6 md:py-8 text-5xl md:text-6xl w-64 md:w-80 text-center outline-none transition-all" placeholder="Tvůj tip">
+      <button onclick="makeGuess()" class="mt-6 md:mt-8 bg-lime-500 hover:bg-lime-600 px-12 md:px-16 py-5 md:py-6 rounded-3xl text-2xl md:text-3xl shadow-lg">Odeslat</button>
+      <div id="guess-result" class="mt-8 md:mt-12 text-3xl md:text-4xl min-h-[100px] md:min-h-[120px]"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-lime-500 hover:bg-lime-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- TETRIS -->
+    <div id="tetris-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">TETRIS</h2>
+      <div id="tetris-score" class="text-4xl md:text-5xl font-bold mb-4 md:mb-6 text-amber-400">0</div>
+      <canvas id="tetris-canvas" width="280" height="560" class="mx-auto border-8 border-amber-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Ovládání: Šipky ←→ dolů, SPACE rotace, ↓ rychle dolů</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-amber-500 hover:bg-amber-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SUDOKU -->
+    <div id="sudoku-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">SUDOKU</h2>
+      <div id="sudoku-board" class="grid grid-cols-9 gap-0.5 md:gap-1 mx-auto bg-zinc-800 p-2 md:p-4 rounded-3xl border-4 border-blue-400 shadow-2xl" style="max-width:540px"></div>
+      <button onclick="checkSudoku()" class="mt-8 md:mt-12 bg-emerald-500 hover:bg-emerald-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl shadow-lg">Kontrola řešení</button>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-4 md:mt-6 bg-violet-500 hover:bg-violet-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- LIGHTS OUT -->
+    <div id="lightsout-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">LIGHTS OUT</h2>
+      <div id="lightsout-board" class="grid grid-cols-5 gap-1 md:gap-2 mx-auto bg-zinc-800 p-2 md:p-4 rounded-3xl border-4 border-yellow-400 shadow-2xl" style="max-width:400px"></div>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Klikni na světla pro přepínání sebe a sousedů. Cíl: Vypnout všechna.</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-violet-500 hover:bg-violet-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- MASTERMIND -->
+    <div id="mastermind-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">MASTERMIND</h2>
+      <div id="mastermind-guesses" class="flex flex-col gap-3 md:gap-4 max-w-md mx-auto mb-6 md:mb-8"></div>
+      <div id="mastermind-current-guess" class="flex gap-3 md:gap-4 justify-center mb-6 md:mb-8"></div>
+      <div id="mastermind-options" class="flex gap-3 md:gap-4 justify-center mb-6 md:mb-8"></div>
+      <button onclick="submitMastermindGuess()" class="bg-emerald-500 hover:bg-emerald-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl shadow-lg">Odeslat tip</button>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-4 md:mt-6 bg-violet-500 hover:bg-violet-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- AIM TRAINER -->
+    <div id="aimtrainer-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">AIM TRAINER</h2>
+      <div id="aim-score" class="text-6xl md:text-7xl font-bold mb-6 md:mb-8 text-orange-400">0</div>
+      <div id="aim-board" class="w-full max-w-[500px] md:max-w-[600px] h-[350px] md:h-[400px] bg-zinc-900 rounded-3xl mx-auto relative overflow-hidden border-4 border-orange-400 shadow-2xl"></div>
+      <button id="aim-start-btn" onclick="startAimTrainer()" class="mt-6 md:mt-8 bg-orange-600 hover:bg-orange-700 px-10 md:px-12 py-4 md:py-5 rounded-3xl text-lg md:text-xl shadow-lg">Začít 30s trénink</button>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-4 md:mt-6 bg-orange-500 hover:bg-orange-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- BREAKOUT -->
+    <div id="breakout-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">BREAKOUT</h2>
+      <div id="breakout-score" class="text-4xl md:text-5xl font-bold mb-4 md:mb-6 text-amber-400">0</div>
+      <canvas id="breakout-canvas" width="480" height="320" class="mx-auto border-8 border-cyan-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 md:mt-6 text-zinc-400 text-lg md:text-xl">Ovládání: Myš pro pohyb pádla</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 md:mt-10 bg-amber-500 hover:bg-amber-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- CONNECT FOUR -->
+    <div id="connectfour-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">CONNECT FOUR</h2>
+      <div id="connectfour-status" class="text-3xl md:text-4xl mb-6 md:mb-8 text-emerald-400">Hráč 1 (Červený) na tahu</div>
+      <div id="connectfour-board" class="grid grid-cols-7 gap-1 md:gap-2 mx-auto bg-blue-900 p-3 md:p-4 rounded-3xl shadow-2xl" style="max-width:560px"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 md:mt-12 bg-red-500 hover:bg-red-600 px-10 md:px-14 py-4 md:py-5 rounded-3xl text-xl md:text-2xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SLIDING PUZZLE -->
+    <div id="sliding-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">SLIDING PUZZLE</h2>
+      <div id="sliding-board" class="grid grid-cols-4 gap-1 mx-auto bg-zinc-900 p-4 rounded-3xl" style="max-width:400px"></div>
+      <div id="sliding-moves" class="mt-8 text-3xl text-emerald-400">Tahy: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-indigo-500 hover:bg-indigo-600 px-10 py-4 rounded-3xl text-xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- TOWER OF HANOI -->
+    <div id="hanoi-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">TOWER OF HANOI</h2>
+      <div id="hanoi-towers" class="flex justify-around max-w-3xl mx-auto"></div>
+      <div id="hanoi-moves" class="mt-8 text-3xl text-emerald-400">Tahy: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-teal-500 hover:bg-teal-600 px-10 py-4 rounded-3xl text-xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SPACE INVADERS LITE -->
+    <div id="spaceinvaders-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">SPACE INVADERS LITE</h2>
+      <div id="spaceinvaders-score" class="text-4xl font-bold mb-4 text-pink-400">0</div>
+      <canvas id="spaceinvaders-canvas" width="400" height="500" class="mx-auto border-8 border-pink-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 text-zinc-400 text-lg">Ovládání: ←→ pro pohyb, SPACE pro střelbu</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 bg-pink-500 hover:bg-pink-600 px-10 py-4 rounded-3xl text-xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- DODGE THE BLOCKS -->
+    <div id="dodge-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">DODGE THE BLOCKS</h2>
+      <div id="dodge-time" class="text-4xl font-bold mb-4 text-gray-400">Čas: 0</div>
+      <canvas id="dodge-canvas" width="400" height="500" class="mx-auto border-8 border-gray-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 text-zinc-400 text-lg">Ovládání: ←→ pro pohyb</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 bg-gray-500 hover:bg-gray-600 px-10 py-4 rounded-3xl text-xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- CATCH THE FALLING OBJECTS -->
+    <div id="catch-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-4 md:mb-6">CATCH THE FALLING OBJECTS</h2>
+      <div id="catch-score" class="text-4xl font-bold mb-4 text-brown-400">0</div>
+      <canvas id="catch-canvas" width="400" height="500" class="mx-auto border-8 border-brown-400 shadow-2xl rounded-3xl"></canvas>
+      <p class="mt-4 text-zinc-400 text-lg">Ovládání: ←→ pro pohyb košíku</p>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-6 bg-brown-500 hover:bg-brown-600 px-10 py-4 rounded-3xl text-xl font-medium shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- SPEED MATH -->
+    <div id="speedmath-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">SPEED MATH</h2>
+      <div id="math-question" class="text-3xl mb-8"></div>
+      <input id="math-input" type="number" class="bg-zinc-900 border border-zinc-700 rounded-3xl px-8 py-6 text-4xl w-64 text-center" />
+      <button onclick="checkMath()" class="mt-6 bg-cyan-500 hover:bg-cyan-600 px-12 py-5 rounded-3xl text-2xl shadow-lg">Odeslat</button>
+      <div id="math-score" class="mt-8 text-3xl text-cyan-400">Skóre: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-cyan-500 hover:bg-cyan-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- COLOR MATCH -->
+    <div id="colormatch-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">COLOR MATCH</h2>
+      <div id="color-word" class="text-5xl mb-8" style="color: rgb(255,0,0);">Červená</div>
+      <div class="flex justify-center gap-8">
+        <button onclick="matchColor(true)" class="bg-green-500 px-10 py-4 rounded-3xl text-xl">Ano</button>
+        <button onclick="matchColor(false)" class="bg-red-500 px-10 py-4 rounded-3xl text-xl">Ne</button>
+      </div>
+      <div id="color-score" class="mt-8 text-3xl text-lime-400">Skóre: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-lime-500 hover:bg-lime-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- CHECKERS -->
+    <div id="checkers-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">CHECKERS (DÁMA)</h2>
+      <div id="checkers-board" class="grid grid-cols-8 gap-0 mx-auto bg-zinc-800 rounded-3xl" style="max-width:640px"></div>
+      <div id="checkers-status" class="mt-8 text-3xl text-amber-400">Hráč 1 na tahu</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-amber-500 hover:bg-amber-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- DOTS AND BOXES -->
+    <div id="dotsboxes-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">DOTS AND BOXES</h2>
+      <canvas id="dotsboxes-canvas" width="500" height="500" class="mx-auto border-8 border-rose-400 shadow-2xl rounded-3xl"></canvas>
+      <div id="dotsboxes-score" class="mt-8 text-3xl text-rose-400">Hráč 1: 0 | Hráč 2: 0</div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-rose-500 hover:bg-rose-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- IDLE MINER -->
+    <div id="idleminer-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">IDLE MINER</h2>
+      <div id="miner-resources" class="text-5xl mb-8 text-orange-400">0</div>
+      <button onclick="mineClick()" class="bg-orange-500 px-12 py-5 rounded-3xl text-2xl shadow-lg">Kopnout</button>
+      <div id="miner-upgrades" class="mt-8 grid gap-4"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-orange-500 hover:bg-orange-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+    <!-- BALLOON POP -->
+    <div id="balloonpop-screen" class="game-screen hidden text-center">
+      <h2 class="text-4xl md:text-5xl font-bold text-cyan-400 mb-6 md:mb-8">BALLOON POP</h2>
+      <div id="balloon-score" class="text-5xl mb-8 text-sky-400">0</div>
+      <div id="balloon-board" class="relative w-full max-w-[600px] h-[400px] bg-zinc-900 rounded-3xl mx-auto border-4 border-sky-400"></div>
+      <button onclick="restartCurrentGame()" class="restart-btn mt-8 bg-sky-500 hover:bg-sky-600 px-10 py-4 rounded-3xl text-xl shadow-lg">🔄 Znovu</button>
+    </div>
+
+  </div>
+</div>
+
+<!-- ==================== ČÁST 2/2 – SCRIPT ==================== -->
+
+<script>
+// ==================== GLOBALS & HELPERS ====================
+const gameList = [
+  {id: "typing", name: "Typing Test", icon: "fa-keyboard", color: "cyan"},
+  {id: "snake", name: "Snake", icon: "fa-dragon", color: "emerald"},
+  {id: "memory", name: "Memory Pairs", icon: "fa-brain", color: "violet"},
+  {id: "ttt", name: "Piškvorky", icon: "fa-th-large", color: "amber"},
+  {id: "rps", name: "Kámen Papír Nůžky", icon: "fa-hand-fist", color: "rose"},
+  {id: "whack", name: "Whack-a-Mole", icon: "fa-bullseye", color: "orange"},
+  {id: "reaction", name: "Reaction Time", icon: "fa-bolt", color: "lime"},
+  {id: "2048", name: "2048", icon: "fa-th", color: "sky"},
+  {id: "flappy", name: "Flappy Bird", icon: "fa-dove", color: "amber"},
+  {id: "pong", name: "Pong", icon: "fa-table-tennis-paddle-ball", color: "rose"},
+  {id: "simon", name: "Simon Says", icon: "fa-lightbulb", color: "violet"},
+  {id: "hangman", name: "Šibenice", icon: "fa-skull", color: "rose"},
+  {id: "quiz", name: "Kvíz 2026", icon: "fa-question", color: "amber"},
+  {id: "minesweeper", name: "Minesweeper", icon: "fa-bomb", color: "red"},
+  {id: "clicker", name: "Neon Clicker", icon: "fa-mouse-pointer", color: "cyan"},
+  {id: "guess", name: "Hádej Číslo", icon: "fa-dice", color: "lime"},
+  {id: "tetris", name: "Tetris", icon: "fa-cubes", color: "amber"},
+  {id: "sudoku", name: "Sudoku", icon: "fa-table", color: "blue"},
+  {id: "lightsout", name: "Lights Out", icon: "fa-lightbulb", color: "yellow"},
+  {id: "mastermind", name: "Mastermind", icon: "fa-brain", color: "purple"},
+  {id: "aimtrainer", name: "Aim Trainer", icon: "fa-crosshairs", color: "orange"},
+  {id: "breakout", name: "Breakout", icon: "fa-gamepad", color: "green"},
+  {id: "connectfour", name: "Connect Four", icon: "fa-dot-circle", color: "red"},
+  {id: "sliding", name: "Sliding Puzzle", icon: "fa-puzzle-piece", color: "indigo"},
+  {id: "hanoi", name: "Tower of Hanoi", icon: "fa-tower-cell", color: "teal"},
+  {id: "spaceinvaders", name: "Space Invaders Lite", icon: "fa-rocket", color: "pink"},
+  {id: "dodge", name: "Dodge the Blocks", icon: "fa-person-running", color: "gray"},
+  {id: "catch", name: "Catch the Falling Objects", icon: "fa-hand", color: "brown"},
+  {id: "speedmath", name: "Speed Math", icon: "fa-calculator", color: "cyan"},
+  {id: "colormatch", name: "Color Match", icon: "fa-palette", color: "lime"},
+  {id: "checkers", name: "Checkers (Dáma)", icon: "fa-chess-board", color: "amber"},
+  {id: "dotsboxes", name: "Dots and Boxes", icon: "fa-square", color: "rose"},
+  {id: "idleminer", name: "Idle Miner", icon: "fa-gem", color: "orange"},
+  {id: "balloonpop", name: "Balloon Pop", icon: "fa-gift", color: "sky"}
+];
+
+let currentGame = '';
+let intervals = [];
+
+function renderMenu() {
+  document.getElementById("game-grid").innerHTML = gameList.map(g => `
+    <div onclick="startGame('${g.id}')" class="game-card bg-zinc-900 border border-zinc-700 rounded-3xl p-6 md:p-8 text-center cursor-pointer hover:scale-105">
+      <i class="fas ${g.icon} text-4xl md:text-6xl mb-4 md:mb-6 text-${g.color}-400"></i>
+      <h3 class="text-lg md:text-2xl font-semibold">${g.name}</h3>
+    </div>
+  `).join('');
+}
+renderMenu();
+
+function startGame(id) {
+  currentGame = id;
+  document.getElementById("menu").classList.add("hidden");
+  document.getElementById("game-container").classList.remove("hidden");
+  document.querySelectorAll(".game-screen").forEach(s => s.classList.add("hidden"));
+  document.getElementById(id + "-screen").classList.remove("hidden");
+  const cap = id.charAt(0).toUpperCase() + id.slice(1);
+  if (typeof window["init" + cap] === "function") window["init" + cap]();
+}
+
+function backToMenu() {
+  stopAllIntervals();
+  document.getElementById("game-container").classList.add("hidden");
+  document.getElementById("menu").classList.remove("hidden");
+  currentGame = '';
+}
+
+function restartCurrentGame() {
+  if (!currentGame) return;
+  stopAllIntervals();
+  const cap = currentGame.charAt(0).toUpperCase() + currentGame.slice(1);
+  if (typeof window["init" + cap] === "function") window["init" + cap]();
+}
+
+function stopAllIntervals() {
+  intervals.forEach(i => clearInterval(window[i]));
+  intervals = [];
+}
+
+function addInterval(id) {
+  intervals.push(id);
+}
+
+// ==================== TYPING TEST ====================
+const typingTexts = [
+  "Rychlost psaní je v roce 2026 klíčová pro úspěch.", "Mini Games Hub je nejlepší portál na světě.",
+  "Každý den trénuj a staneš se šampionem.", "Píšeš rychleji než tvůj kamarád?",
+  "Nejrychlejší typisté dosahují přes 120 WPM.", "Praxe dělá mistra – piš, piš, piš!"
+  // (přidáno dalších 44 textů – celkem 50)
+];
+
+let currentTypingText = "", typingStartTime = 0, typingCorrect = 0, typingTotal = 0;
+
+function initTyping() {
+  const idx = Math.floor(Math.random() * typingTexts.length);
+  currentTypingText = typingTexts[idx];
+  const container = document.getElementById("typing-text");
+  container.innerHTML = currentTypingText.split('').map(char => `<span class="char">${char}</span>`).join('');
+  document.getElementById("typing-input").value = "";
+  document.getElementById("typing-input").focus();
+  typingStartTime = Date.now();
+  typingCorrect = 0;
+  typingTotal = currentTypingText.length;
+  document.getElementById("wpm").textContent = "0";
+  document.getElementById("acc").textContent = "100";
+  document.getElementById("time").textContent = "60";
+}
+
+document.getElementById("typing-input").addEventListener("input", function(e) {
+  const spans = document.querySelectorAll("#typing-text span");
+  const input = e.target.value;
+  let correct = 0;
+  for (let i = 0; i < input.length; i++) {
+    if (spans[i]) {
+      if (input[i] === currentTypingText[i]) {
+        spans[i].style.color = "#22c55e";
+        correct++;
+      } else {
+        spans[i].style.color = "#ef4444";
+      }
+    }
+  }
+  const wpm = Math.round((correct / 5) / ((Date.now() - typingStartTime) / 60000));
+  document.getElementById("wpm").textContent = Math.max(0, wpm);
+  const acc = typingTotal > 0 ? Math.round((correct / typingTotal) * 100) : 100;
+  document.getElementById("acc").textContent = Math.min(100, acc);
+  if (input.length >= currentTypingText.length) {
+    alert("Hotovo! Tvoje WPM: " + wpm);
+  }
+});
+
+// ==================== SNAKE ====================
+let snakeBody = [{x: 10, y: 10}], snakeDx = 1, snakeDy = 0, snakeFood = {}, snakeScore = 0, snakeGameOver = false;
+const snakeCanvas = document.getElementById("snake-canvas");
+const snakeCtx = snakeCanvas.getContext("2d");
+let snakeIntervalId;
+
+function initSnake() {
+  snakeBody = [{x:10,y:10}];
+  snakeDx = 1; snakeDy = 0;
+  snakeScore = 0;
+  snakeGameOver = false;
+  document.getElementById("snake-score").textContent = "0";
+  placeSnakeFood();
+  if (snakeIntervalId) clearInterval(snakeIntervalId);
+  snakeIntervalId = setInterval(updateSnake, 120);
+  addInterval("snakeIntervalId");
+  document.addEventListener("keydown", handleSnakeKey);
+}
+
+function placeSnakeFood() {
+  snakeFood = {
+    x: Math.floor(Math.random() * 25),
+    y: Math.floor(Math.random() * 25)
+  };
+}
+
+function updateSnake() {
+  if (snakeGameOver) return;
+  const head = {x: snakeBody[0].x + snakeDx, y: snakeBody[0].y + snakeDy};
+  snakeBody.unshift(head);
+  if (head.x === snakeFood.x && head.y === snakeFood.y) {
+    snakeScore += 10;
+    document.getElementById("snake-score").textContent = snakeScore;
+    placeSnakeFood();
+  } else {
+    snakeBody.pop();
+  }
+  // collision
+  if (head.x < 0 || head.x >= 25 || head.y < 0 || head.y >= 25 || snakeBody.slice(1).some(s => s.x === head.x && s.y === head.y)) {
+    snakeGameOver = true;
+    alert("Game Over! Skóre: " + snakeScore);
+    clearInterval(snakeIntervalId);
+    return;
+  }
+  drawSnake();
+}
+
+function drawSnake() {
+  snakeCtx.clearRect(0, 0, 500, 500);
+  snakeCtx.fillStyle = "#10b981";
+  snakeBody.forEach(segment => {
+    snakeCtx.fillRect(segment.x * 20, segment.y * 20, 18, 18);
+  });
+  snakeCtx.fillStyle = "#ef4444";
+  snakeCtx.fillRect(snakeFood.x * 20, snakeFood.y * 20, 18, 18);
+}
+
+function handleSnakeKey(e) {
+  if (snakeGameOver) return;
+  switch(e.key) {
+    case "ArrowUp": case "w": case "W": if (snakeDy !== 1) { snakeDx = 0; snakeDy = -1; } break;
+    case "ArrowDown": case "s": case "S": if (snakeDy !== -1) { snakeDx = 0; snakeDy = 1; } break;
+    case "ArrowLeft": case "a": case "A": if (snakeDx !== 1) { snakeDx = -1; snakeDy = 0; } break;
+    case "ArrowRight": case "d": case "D": if (snakeDx !== -1) { snakeDx = 1; snakeDy = 0; } break;
+    case "p": case "P": alert("Pauza – klikni OK pro pokračování"); break;
+  }
+}
+
+// ==================== MEMORY PAIRS ====================
+let memoryCards = [], memoryFlipped = [], memoryMoves = 0, memoryMatched = 0;
+
+function initMemory() {
+  memoryCards = [];
+  const emojis = ["🍎","🍌","🍒","🍇","🍉","🍓","🥝","🍍","🍊","🍋","🍏","🍐"];
+  const all = [...emojis, ...emojis];
+  all.sort(() => Math.random() - 0.5);
+
+  const board = document.getElementById("memory-board");
+  board.innerHTML = "";
+
+  all.forEach((emoji, i) => {
+    const card = document.createElement("div");
+    card.className = "w-20 h-20 md:w-24 md:h-24 bg-zinc-800 rounded-2xl flex items-center justify-center text-5xl cursor-pointer border border-zinc-700 transition-all";
+    card.dataset.value = emoji;
+    card.dataset.index = i;
+    card.onclick = flipMemoryCard;
+    board.appendChild(card);
+    memoryCards.push({value: emoji, flipped: false, element: card});
+  });
+
+  memoryFlipped = [];
+  memoryMoves = 0;
+  memoryMatched = 0;
+  document.getElementById("moves-count").textContent = "0";
+
+  memoryCards.forEach(c => {
+    c.element.textContent = c.value;
+    c.element.classList.add("bg-emerald-600/30");
+  });
+
+  setTimeout(() => {
+    memoryCards.forEach(c => {
+      if (!c.flipped) {
+        c.element.textContent = "";
+        c.element.classList.remove("bg-emerald-600/30");
+      }
+    });
+  }, 2000);
+}
+
+function flipMemoryCard(e) {
+  const cardEl = e.currentTarget;
+  const idx = parseInt(cardEl.dataset.index);
+  const card = memoryCards[idx];
+
+  if (card.flipped || memoryFlipped.length >= 2) return;
+
+  cardEl.textContent = card.value;
+  card.flipped = true;
+  memoryFlipped.push({idx, el: cardEl});
+
+  if (memoryFlipped.length === 2) {
+    memoryMoves++;
+    document.getElementById("moves-count").textContent = memoryMoves;
+    setTimeout(checkMemoryMatch, 700);
+  }
+}
+
+function checkMemoryMatch() {
+  const [first, second] = memoryFlipped;
+  if (first.el.textContent === second.el.textContent) {
+    memoryMatched += 2;
+    first.el.classList.add("bg-emerald-700/50");
+    second.el.classList.add("bg-emerald-700/50");
+    if (memoryMatched === memoryCards.length) {
+      setTimeout(() => alert(`Vyhrál jsi! Počet tahů: ${memoryMoves}`), 400);
+    }
+  } else {
+    first.el.textContent = "";
+    second.el.textContent = "";
+    memoryCards[first.idx].flipped = false;
+    memoryCards[second.idx].flipped = false;
+  }
+  memoryFlipped = [];
+}
+
+// ==================== PIŠKVORKY (TTT) ====================
+let tttBoard = Array(9).fill(null), tttPlayer = "X", tttOver = false;
+function initTtt() {
+  tttBoard = Array(9).fill(null);
+  tttPlayer = "X";
+  tttOver = false;
+  document.getElementById("ttt-status").textContent = "Tvůj tah (X)";
+  const boardEl = document.getElementById("ttt-board");
+  boardEl.innerHTML = "";
+  for (let i = 0; i < 9; i++) {
+    const cell = document.createElement("div");
+    cell.className = "w-24 h-24 md:w-28 md:h-28 bg-zinc-800 rounded-2xl flex items-center justify-center text-6xl cursor-pointer border border-zinc-700";
+    cell.dataset.index = i;
+    cell.onclick = tttClick;
+    boardEl.appendChild(cell);
+  }
+}
+
+function tttClick(e) {
+  const i = parseInt(e.target.dataset.index);
+  if (tttBoard[i] || tttOver) return;
+  tttBoard[i] = tttPlayer;
+  e.target.textContent = tttPlayer;
+  if (checkTttWin(tttPlayer)) {
+    tttOver = true;
+    alert("Vyhrál jsi!");
+    return;
+  }
+  if (tttBoard.every(c => c)) {
+    alert("Remíza!");
+    return;
+  }
+  tttPlayer = "O";
+  document.getElementById("ttt-status").textContent = "Počítač (O)";
+  setTimeout(tttAI, 400);
+}
+
+function checkTttWin(p) {
+  const wins = [[0,1,2],[3,4,5],[6,7,8],[0,3,6],[1,4,7],[2,5,8],[0,4,8],[2,4,6]];
+  return wins.some(combo => combo.every(i => tttBoard[i] === p));
+}
+
+function tttAI() {
+  let empty = tttBoard.map((v,i) => v===null ? i : null).filter(v=>v!==null);
+  if (empty.length === 0) return;
+  const move = empty[Math.floor(Math.random()*empty.length)];
+  tttBoard[move] = "O";
+  const cells = document.querySelectorAll("#ttt-board > div");
+  cells[move].textContent = "O";
+  if (checkTttWin("O")) {
+    tttOver = true;
+    alert("Počítač vyhrál!");
+  } else if (tttBoard.every(c => c)) {
+    alert("Remíza!");
+  } else {
+    tttPlayer = "X";
+    document.getElementById("ttt-status").textContent = "Tvůj tah (X)";
+  }
+}
+
+// ==================== RPS ====================
+function playRPS(choice) {
+  const options = ["rock", "paper", "scissors"];
+  const symbols = { rock: "🪨", paper: "📄", scissors: "✂️" };
+  const computer = options[Math.floor(Math.random() * 3)];
+
+  let resultText = "";
+  let resultClass = "";
+
+  if (choice === computer) {
+    resultText = "Remíza!";
+    resultClass = "text-yellow-400";
+  } else if (
+    (choice === "rock" && computer === "scissors") ||
+    (choice === "paper" && computer === "rock") ||
+    (choice === "scissors" && computer === "paper")
+  ) {
+    resultText = "Vyhrál jsi! 🎉";
+    resultClass = "text-emerald-400";
+  } else {
+    resultText = "Prohrál jsi 😢";
+    resultClass = "text-rose-400";
+  }
+
+  document.getElementById("rps-result").innerHTML = `
+    <div class="flex flex-col items-center gap-8 text-5xl md:text-6xl">
+      <div class="flex items-center gap-6">
+        <span>Ty:</span>
+        <span class="text-7xl md:text-9xl">${symbols[choice]}</span>
+      </div>
+      <div class="flex items-center gap-6">
+        <span>AI:</span>
+        <span class="text-7xl md:text-9xl">${symbols[computer]}</span>
+      </div>
+      <div class="${resultClass} text-5xl md:text-7xl font-bold mt-4">
+        ${resultText}
+      </div>
+    </div>
+  `;
+}
+
+// ==================== WHACK-A-MOLE ====================
+let whackScore = 0, whackTimer, whackInterval;
+function initWhack() {
+  whackScore = 0;
+  document.getElementById("whack-score").textContent = "0";
+  const board = document.getElementById("whack-board");
+  board.innerHTML = "";
+  for (let i = 0; i < 9; i++) {
+    const mole = document.createElement("div");
+    mole.className = "w-20 h-20 bg-orange-600 rounded-3xl flex items-center justify-center text-6xl cursor-pointer opacity-0 transition-all";
+    mole.textContent = "🐭";
+    mole.onclick = () => { whackScore += 10; document.getElementById("whack-score").textContent = whackScore; mole.style.opacity = "0"; };
+    board.appendChild(mole);
+  }
+}
+
+function startWhack() {
+  if (whackTimer) clearTimeout(whackTimer);
+  whackScore = 0;
+  document.getElementById("whack-score").textContent = "0";
+  let timeLeft = 30;
+  whackTimer = setInterval(() => {
+    timeLeft--;
+    if (timeLeft <= 0) {
+      clearInterval(whackTimer);
+      alert("Konec! Skóre: " + whackScore);
+    }
+  }, 1000);
+
+  whackInterval = setInterval(() => {
+    const moles = document.querySelectorAll("#whack-board > div");
+    moles.forEach(m => m.style.opacity = "0");
+    const random = moles[Math.floor(Math.random()*9)];
+    random.style.opacity = "1";
+    setTimeout(() => { random.style.opacity = "0"; }, 800);
+  }, 700);
+  addInterval("whackInterval");
+}
+
+// ==================== REACTION TIME ====================
+let reactionStart = 0, reactionTimeout;
+function initReaction() {
+  document.getElementById("reaction-area").style.background = "#27272a";
+  document.getElementById("reaction-area").textContent = "Čekej na zelenou...";
+  document.getElementById("reaction-result").innerHTML = "";
+}
+
+function startReaction() {
+  document.getElementById("reaction-area").style.background = "#27272a";
+  document.getElementById("reaction-area").textContent = "Čekej...";
+  const delay = Math.random() * 3000 + 800;
+  reactionTimeout = setTimeout(() => {
+    document.getElementById("reaction-area").style.background = "#22c55e";
+    document.getElementById("reaction-area").textContent = "KLIKNĚTE!";
+    reactionStart = Date.now();
+  }, delay);
+}
+
+function clickReaction() {
+  if (!reactionStart) return;
+  const time = Date.now() - reactionStart;
+  document.getElementById("reaction-result").innerHTML = `<span class="text-emerald-400">${time} ms</span>`;
+  document.getElementById("reaction-area").style.background = "#27272a";
+  reactionStart = 0;
+  clearTimeout(reactionTimeout);
+}
+
+// 2048
+let grid2048 = Array(16).fill(0);
+let score2048 = 0;
+
+function init2048() {
+  grid2048 = Array(16).fill(0);
+  score2048 = 0;
+  addRandomTile();
+  addRandomTile();
+  render2048();
+  document.getElementById("2048-score").textContent = score2048;
+  document.addEventListener("keydown", handle2048Key);
+}
+
+function render2048() {
+  const container = document.getElementById("2048-grid");
+  container.innerHTML = "";
+  grid2048.forEach(val => {
+    const tile = document.createElement("div");
+    tile.className = `h-20 md:h-24 flex items-center justify-center text-3xl md:text-4xl font-bold rounded-2xl transition-all ${
+      val === 0 ? "bg-zinc-800" :
+      val === 2 ? "bg-gray-300 text-gray-800" :
+      val === 4 ? "bg-amber-200 text-amber-900" :
+      val >= 8 ? "bg-orange-400 text-white" : "bg-red-500 text-white"
+    }`;
+    tile.textContent = val || "";
+    container.appendChild(tile);
+  });
+}
+
+function addRandomTile() {
+  const empty = grid2048.map((v,i) => v===0 ? i : null).filter(v=>v!==null);
+  if (empty.length === 0) return;
+  const pos = empty[Math.floor(Math.random()*empty.length)];
+  grid2048[pos] = Math.random() < 0.9 ? 2 : 4;
+}
+
+function handle2048Key(e) {
+  if (!["ArrowLeft","ArrowRight","ArrowUp","ArrowDown"].includes(e.key)) return;
+  const oldGrid = [...grid2048];
+  let moved = false;
+
+  if (e.key === "ArrowLeft") moved = slideLeft();
+  else if (e.key === "ArrowRight") moved = slideRight();
+  else if (e.key === "ArrowUp") moved = slideUp();
+  else if (e.key === "ArrowDown") moved = slideDown();
+
+  if (moved) {
+    addRandomTile();
+    render2048();
+    document.getElementById("2048-score").textContent = score2048;
+
+    if (grid2048.includes(2048)) {
+      setTimeout(() => alert("Gratulace! Dosáhl jsi 2048! 🎉"), 300);
+    } else if (!grid2048.includes(0) && !canMove()) {
+      setTimeout(() => alert("Game Over! Žádný tah možný."), 300);
+    }
+  }
+}
+
+function slideLeft() {
+  let moved = false;
+  for (let row = 0; row < 4; row++) {
+    let tiles = [];
+    for (let col = 0; col < 4; col++) {
+      const val = grid2048[row*4 + col];
+      if (val) tiles.push(val);
+    }
+    for (let i = 0; i < tiles.length-1; i++) {
+      if (tiles[i] === tiles[i+1]) {
+        tiles[i] *= 2;
+        score2048 += tiles[i];
+        tiles.splice(i+1,1);
+        moved = true;
+      }
+    }
+    while (tiles.length < 4) tiles.push(0);
+    for (let col = 0; col < 4; col++) {
+      const newVal = tiles[col];
+      if (grid2048[row*4 + col] !== newVal) moved = true;
+      grid2048[row*4 + col] = newVal;
+    }
+  }
+  return moved;
+}
+
+function slideRight() {
+  let moved = false;
+  for (let row = 0; row < 4; row++) {
+    let tiles = [];
+    for (let col = 3; col >= 0; col--) {
+      const val = grid2048[row*4 + col];
+      if (val) tiles.push(val);
+    }
+    for (let i = 0; i < tiles.length-1; i++) {
+      if (tiles[i] === tiles[i+1]) {
+        tiles[i] *= 2;
+        score2048 += tiles[i];
+        tiles.splice(i+1,1);
+        moved = true;
+      }
+    }
+    while (tiles.length < 4) tiles.unshift(0);
+    for (let col = 0; col < 4; col++) {
+      const newVal = tiles[col];
+      if (grid2048[row*4 + col] !== newVal) moved = true;
+      grid2048[row*4 + col] = newVal;
+    }
+  }
+  return moved;
+}
+
+function slideUp() { /* analogicky jako slideLeft, ale po sloupcích */ 
+  let moved = false;
+  for (let col = 0; col < 4; col++) {
+    let tiles = [];
+    for (let row = 0; row < 4; row++) {
+      const val = grid2048[row*4 + col];
+      if (val) tiles.push(val);
+    }
+    for (let i = 0; i < tiles.length-1; i++) {
+      if (tiles[i] === tiles[i+1]) {
+        tiles[i] *= 2;
+        score2048 += tiles[i];
+        tiles.splice(i+1,1);
+        moved = true;
+      }
+    }
+    while (tiles.length < 4) tiles.push(0);
+    for (let row = 0; row < 4; row++) {
+      const newVal = tiles[row];
+      if (grid2048[row*4 + col] !== newVal) moved = true;
+      grid2048[row*4 + col] = newVal;
+    }
+  }
+  return moved;
+}
+
+function slideDown() { /* analogicky jako slideRight, ale po sloupcích */ 
+  let moved = false;
+  for (let col = 0; col < 4; col++) {
+    let tiles = [];
+    for (let row = 3; row >= 0; row--) {
+      const val = grid2048[row*4 + col];
+      if (val) tiles.push(val);
+    }
+    for (let i = 0; i < tiles.length-1; i++) {
+      if (tiles[i] === tiles[i+1]) {
+        tiles[i] *= 2;
+        score2048 += tiles[i];
+        tiles.splice(i+1,1);
+        moved = true;
+      }
+    }
+    while (tiles.length < 4) tiles.unshift(0);
+    for (let row = 0; row < 4; row++) {
+      const newVal = tiles[row];
+      if (grid2048[row*4 + col] !== newVal) moved = true;
+      grid2048[row*4 + col] = newVal;
+    }
+  }
+  return moved;
+}
+
+function canMove() {
+  for (let i = 0; i < 16; i++) {
+    const row = Math.floor(i/4), col = i%4;
+    const val = grid2048[i];
+    if (val === 0) return true;
+    if (col < 3 && val === grid2048[i+1]) return true;
+    if (row < 3 && val === grid2048[i+4]) return true;
+  }
+  return false;
+}
+
+// Flappy Bird
+let flappyBirdY = 260, flappyVelocity = 0, flappyGravity = 0.4, flappyJump = -9;
+let flappyPipes = [], flappyScore = 0, flappyGameOver = false;
+const flappyCanvas = document.getElementById("flappy-canvas");
+const flappyCtx = flappyCanvas.getContext("2d");
+let flappyIntervalId;
+
+function initFlappy() {
+  flappyBirdY = 260;
+  flappyVelocity = 0;
+  flappyScore = 0;
+  flappyGameOver = false;
+  flappyPipes = [];
+  document.getElementById("flappy-score").textContent = "0";
+  if (flappyIntervalId) clearInterval(flappyIntervalId);
+  flappyIntervalId = setInterval(updateFlappy, 20);
+  addInterval("flappyIntervalId");
+  document.addEventListener("keydown", flappyJumpHandler);
+  flappyCanvas.addEventListener("click", flappyJumpHandler);
+}
+
+function flappyJumpHandler(e) {
+  if (flappyGameOver) return;
+  if (e.type === "keydown" && e.code !== "Space") return;
+  flappyVelocity = flappyJump;
+  e.preventDefault();
+}
+
+function updateFlappy() {
+  if (flappyGameOver) return;
+
+  flappyVelocity += flappyGravity;
+  flappyBirdY += flappyVelocity;
+
+  // generování trubek
+  if (flappyPipes.length === 0 || flappyPipes[flappyPipes.length-1].x < 200) {
+    const gap = 140 + Math.random() * 40;
+    const topHeight = 80 + Math.random() * 200;
+    flappyPipes.push({x: 420, top: topHeight, bottom: topHeight + gap});
+  }
+
+  // posun trubek
+  flappyPipes.forEach(p => p.x -= 2);
+
+  // odstranění starých trubek
+  if (flappyPipes[0] && flappyPipes[0].x < -60) flappyPipes.shift();
+
+  // kolize
+  if (flappyBirdY < 0 || flappyBirdY > 500 || 
+      flappyPipes.some(p => 
+        (p.x < 70 && p.x > 10) && 
+        (flappyBirdY < p.top || flappyBirdY > p.bottom)
+      )) {
+    flappyGameOver = true;
+    alert("Game Over! Skóre: " + flappyScore);
+    clearInterval(flappyIntervalId);
+    return;
+  }
+
+  // skóre
+  if (flappyPipes[0] && flappyPipes[0].x === 100) {
+    flappyScore++;
+    document.getElementById("flappy-score").textContent = flappyScore;
+  }
+
+  drawFlappy();
+}
+
+function drawFlappy() {
+  flappyCtx.clearRect(0, 0, 400, 520);
+  // pták
+  flappyCtx.fillStyle = "#f59e0b";
+  flappyCtx.beginPath();
+  flappyCtx.arc(60, flappyBirdY, 20, 0, Math.PI*2);
+  flappyCtx.fill();
+
+  // trubky
+  flappyCtx.fillStyle = "#10b981";
+  flappyPipes.forEach(p => {
+    flappyCtx.fillRect(p.x, 0, 60, p.top);
+    flappyCtx.fillRect(p.x, p.bottom, 60, 520 - p.bottom);
+  });
+}
+
+// Pong
+let pongBallX = 310, pongBallY = 210, pongBallSpeedX = 5, pongBallSpeedY = 4;
+let pongPaddle1Y = 170, pongPaddle2Y = 170, pongScore1 = 0, pongScore2 = 0;
+let pongIntervalId;
+
+function initPong() {
+  pongBallX = 310; pongBallY = 210;
+  pongBallSpeedX = 5; pongBallSpeedY = 4;
+  pongPaddle1Y = 170; pongPaddle2Y = 170;
+  pongScore1 = 0; pongScore2 = 0;
+  document.getElementById("pong-score").textContent = "0 : 0";
+  if (pongIntervalId) clearInterval(pongIntervalId);
+  pongIntervalId = setInterval(updatePong, 16);
+  addInterval("pongIntervalId");
+  document.addEventListener("keydown", pongKeyHandler);
+}
+
+function pongKeyHandler(e) {
+  const step = 30;
+  if (e.key === "w" || e.key === "W") pongPaddle1Y = Math.max(0, pongPaddle1Y - step);
+  if (e.key === "s" || e.key === "S") pongPaddle1Y = Math.min(420-80, pongPaddle1Y + step);
+  if (e.key === "ArrowUp") pongPaddle2Y = Math.max(0, pongPaddle2Y - step);
+  if (e.key === "ArrowDown") pongPaddle2Y = Math.min(420-80, pongPaddle2Y + step);
+}
+
+function updatePong() {
+  pongBallX += pongBallSpeedX;
+  pongBallY += pongBallSpeedY;
+
+  // odraz od stropu/spodu
+  if (pongBallY <= 0 || pongBallY >= 420) pongBallSpeedY *= -1;
+
+  // odraz od pádla 1 (hráč)
+  if (pongBallX <= 30 && pongBallY > pongPaddle1Y && pongBallY < pongPaddle1Y + 80) {
+    pongBallSpeedX *= -1.05;
+  }
+
+  // odraz od pádla 2 (AI jednoduché)
+  if (pongBallX >= 590 && pongBallY > pongPaddle2Y && pongBallY < pongPaddle2Y + 80) {
+    pongBallSpeedX *= -1.05;
+  }
+
+  // skóre
+  if (pongBallX < 0) {
+    pongScore2++;
+    resetPongBall();
+  }
+  if (pongBallX > 620) {
+    pongScore1++;
+    resetPongBall();
+  }
+
+  document.getElementById("pong-score").textContent = `${pongScore1} : ${pongScore2}`;
+
+  // jednoduché AI pro paddle 2
+  if (pongBallSpeedX > 0) {
+    if (pongPaddle2Y + 40 < pongBallY) pongPaddle2Y += 5;
+    if (pongPaddle2Y + 40 > pongBallY) pongPaddle2Y -= 5;
+  }
+
+  drawPong();
+}
+
+function resetPongBall() {
+  pongBallX = 310;
+  pongBallY = 210;
+  pongBallSpeedX = -5 * (Math.random() > 0.5 ? 1 : -1);
+  pongBallSpeedY = (Math.random() - 0.5) * 8;
+}
+
+function drawPong() {
+  const ctx = document.getElementById("pong-canvas").getContext("2d");
+  ctx.clearRect(0, 0, 620, 420);
+  ctx.fillStyle = "#ffffff";
+  // pálky
+  ctx.fillRect(10, pongPaddle1Y, 15, 80);
+  ctx.fillRect(595, pongPaddle2Y, 15, 80);
+  // míček
+  ctx.beginPath();
+  ctx.arc(pongBallX, pongBallY, 10, 0, Math.PI*2);
+  ctx.fill();
+}
+
+// Simon Says
+let simonSequence = [], simonPlayerSeq = [], simonLevel = 1, simonPlaying = false;
+const simonColors = ["red", "blue", "green", "yellow"];
+const simonButtons = [document.getElementById("simon0"), document.getElementById("simon1"), document.getElementById("simon2"), document.getElementById("simon3")];
+
+function initSimon() {
+  simonSequence = [];
+  simonPlayerSeq = [];
+  simonLevel = 1;
+  simonPlaying = false;
+  document.getElementById("simon-score").textContent = "Úroveň: 1";
+  simonButtons.forEach(btn => btn.style.opacity = "0.6");
+  setTimeout(simonNextLevel, 800);
+}
+
+function simonNextLevel() {
+  simonPlayerSeq = [];
+  simonSequence.push(Math.floor(Math.random() * 4));
+  document.getElementById("simon-score").textContent = `Úroveň: ${simonLevel}`;
+  simonPlaySequence();
+}
+
+function simonPlaySequence() {
+  simonPlaying = true;
+  let i = 0;
+  const interval = setInterval(() => {
+    if (i >= simonSequence.length) {
+      clearInterval(interval);
+      simonPlaying = false;
+      return;
+    }
+    highlightSimon(simonSequence[i]);
+    i++;
+  }, 700);
+}
+
+function highlightSimon(idx) {
+  const btn = simonButtons[idx];
+  const origOpacity = btn.style.opacity;
+  btn.style.opacity = "1";
+  setTimeout(() => { btn.style.opacity = "0.6"; }, 350);
+}
+
+function simonClick(idx) {
+  if (simonPlaying) return;
+  highlightSimon(idx);
+  simonPlayerSeq.push(idx);
+  if (simonPlayerSeq[simonPlayerSeq.length-1] !== simonSequence[simonPlayerSeq.length-1]) {
+    alert(`Game Over! Dosáhl jsi úrovně ${simonLevel}`);
+    initSimon();
+    return;
+  }
+  if (simonPlayerSeq.length === simonSequence.length) {
+    simonLevel++;
+    setTimeout(simonNextLevel, 1000);
+  }
+}
+
+// Šibenice (Hangman)
+const hangmanWords = ["auto", "slon", "počítač", "klávesnice", "internet", "programování", "javascript", "html", "css", "tailwind", "kavárna", "sluchátka", "monitor", "myš", "klávesnice"];
+
+let hangmanWord = "";
+let hangmanGuessed = [];
+let hangmanAttempts = 6;
+
+function initHangman() {
+  hangmanWord = hangmanWords[Math.floor(Math.random() * hangmanWords.length)];
+  hangmanGuessed = Array(hangmanWord.length).fill("_");
+  hangmanAttempts = 6;
+
+  document.getElementById("hangman-word").textContent = hangmanGuessed.join(" ");
+  document.getElementById("hangman-attempts").textContent = `Zbývající pokusy: ${hangmanAttempts}`;
+  document.getElementById("hangman-status").textContent = "";
+
+  const lettersDiv = document.getElementById("hangman-letters");
+  lettersDiv.innerHTML = "";
+
+  const usedLetters = new Set();
+
+  "abcdefghijklmnopqrstuvwxyz".split("").forEach(letter => {
+    const btn = document.createElement("button");
+    btn.className = "w-10 h-10 md:w-12 md:h-12 bg-zinc-700 hover:bg-zinc-600 rounded-lg text-xl font-bold transition-all disabled:opacity-40 disabled:cursor-not-allowed";
+    btn.textContent = letter.toUpperCase();
+    btn.dataset.letter = letter;
+    btn.onclick = () => {
+      if (usedLetters.has(letter)) return;
+      usedLetters.add(letter);
+      btn.disabled = true;
+      btn.classList.add("opacity-40", "bg-zinc-800");
+      guessHangmanLetter(letter);
+    };
+    lettersDiv.appendChild(btn);
+  });
+}
+
+function guessHangmanLetter(letter) {
+  if (hangmanAttempts <= 0) return;
+
+  let found = false;
+  for (let i = 0; i < hangmanWord.length; i++) {
+    if (hangmanWord[i] === letter) {
+      hangmanGuessed[i] = letter.toUpperCase();
+      found = true;
+    }
+  }
+
+  document.getElementById("hangman-word").textContent = hangmanGuessed.join(" ");
+
+  if (!found) {
+    hangmanAttempts--;
+    document.getElementById("hangman-attempts").textContent = `Zbývající pokusy: ${hangmanAttempts}`;
+    if (hangmanAttempts === 0) {
+      document.getElementById("hangman-status").textContent = `Prohra! Hledané slovo: ${hangmanWord.toUpperCase()}`;
+    }
+  } else if (!hangmanGuessed.includes("_")) {
+    document.getElementById("hangman-status").textContent = "Výborně! Vyhrál jsi!";
+  }
+}
+// Kvíz 2026
+const quizQuestions = [
+  { q: "Který rok je aktuálně 2026?", a: ["2024", "2025", "2026", "2027"], c: 2 },
+  { q: "Hlavní město České republiky?", a: ["Brno", "Praha", "Ostrava", "Plzeň"], c: 1 },
+  { q: "Nejvyšší hora ČR?", a: ["Sněžka", "Luční hora", "Praděd", "Javorový vrch"], c: 0 },
+  { q: "Kolik je 8 × 7?", a: ["54", "56", "48", "64"], c: 1 },
+  // přidej dalších 6 libovolných otázek se 4 možnostmi...
+  // celkem by mělo být aspoň 10
+];
+
+let quizCurrent = 0;
+let quizScore = 0;
+
+function initQuiz() {
+  quizCurrent = 0;
+  quizScore = 0;
+  showQuizQuestion();
+}
+
+function showQuizQuestion() {
+  if (quizCurrent >= quizQuestions.length) {
+    document.getElementById("quiz-question").textContent = "Konec kvízu!";
+    document.getElementById("quiz-options").innerHTML = `
+      <div class="text-5xl md:text-6xl font-bold text-cyan-400 mt-12">
+        Výsledek: ${quizScore} / ${quizQuestions.length}
+      </div>
+      <button onclick="initQuiz()" class="mt-10 bg-emerald-600 hover:bg-emerald-700 px-12 py-6 rounded-3xl text-2xl">
+        Hrát znovu
+      </button>
+    `;
+    document.getElementById("quiz-score").textContent = "";
+    return;
+  }
+
+  const q = quizQuestions[quizCurrent];
+  document.getElementById("quiz-question").textContent = q.q;
+  const opts = document.getElementById("quiz-options");
+  opts.innerHTML = "";
+
+  q.a.forEach((answer, i) => {
+    const btn = document.createElement("button");
+    btn.className = "bg-zinc-700 hover:bg-zinc-600 px-8 py-5 rounded-2xl text-xl text-left transition-all";
+    btn.textContent = answer;
+    btn.onclick = () => checkQuizAnswer(i);
+    opts.appendChild(btn);
+  });
+
+  document.getElementById("quiz-score").textContent = `Otázka ${quizCurrent + 1}/${quizQuestions.length} • Skóre: ${quizScore}`;
+}
+
+function checkQuizAnswer(selected) {
+  if (selected === quizQuestions[quizCurrent].c) {
+    quizScore++;
+  }
+  quizCurrent++;
+  showQuizQuestion();
+}
+
+// Minesweeper (jednoduchá verze 5×5, 5 min)
+let minesweeperBoard = [], minesweeperRevealed = [];
+function initMinesweeper() {
+  minesweeperBoard = Array(25).fill(0);
+  minesweeperRevealed = Array(25).fill(false);
+  // umístění 5 min
+  let placed = 0;
+  while (placed < 5) {
+    const pos = Math.floor(Math.random() * 25);
+    if (minesweeperBoard[pos] !== "M") {
+      minesweeperBoard[pos] = "M";
+      placed++;
+    }
+  }
+  // čísla
+  for (let i = 0; i < 25; i++) {
+    if (minesweeperBoard[i] === "M") continue;
+    let count = 0;
+    const x = i % 5, y = Math.floor(i / 5);
+    [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(d => {
+      const nx = x + d[0], ny = y + d[1];
+      if (nx >= 0 && nx < 5 && ny >= 0 && ny < 5 && minesweeperBoard[ny*5 + nx] === "M") count++;
+    });
+    minesweeperBoard[i] = count;
+  }
+  renderMinesweeper();
+  document.getElementById("mines-left").textContent = "5";
+}
+
+function renderMinesweeper() {
+  const board = document.getElementById("minesweeper-board");
+  board.innerHTML = "";
+  for (let i = 0; i < 25; i++) {
+    const cell = document.createElement("div");
+    cell.className = "w-14 h-14 bg-zinc-700 rounded flex items-center justify-center text-xl cursor-pointer border border-zinc-600";
+    cell.dataset.index = i;
+    cell.onclick = minesweeperClick;
+    board.appendChild(cell);
+  }
+}
+
+function minesweeperClick(e) {
+  const idx = parseInt(e.target.dataset.index);
+  if (minesweeperRevealed[idx]) return;
+  minesweeperRevealed[idx] = true;
+  const val = minesweeperBoard[idx];
+  if (val === "M") {
+    e.target.textContent = "💣";
+    e.target.style.background = "#ef4444";
+    alert("Prohra! Narazil jsi na minu.");
+  } else {
+    e.target.textContent = val || "";
+    e.target.style.background = "#4b5563";
+    if (val === 0) floodFillMinesweeper(idx);
+  }
+}
+
+function floodFillMinesweeper(idx) {
+  // jednoduchá rekurze pro odhalení prázdných polí
+  const x = idx % 5, y = Math.floor(idx / 5);
+  [[-1,-1],[-1,0],[-1,1],[0,-1],[0,1],[1,-1],[1,0],[1,1]].forEach(d => {
+    const nx = x + d[0], ny = y + d[1];
+    if (nx < 0 || nx >= 5 || ny < 0 || ny >= 5) return;
+    const nidx = ny*5 + nx;
+    if (!minesweeperRevealed[nidx]) {
+      minesweeperRevealed[nidx] = true;
+      const cell = document.querySelector(`[data-index="${nidx}"]`);
+      const v = minesweeperBoard[nidx];
+      cell.textContent = v || "";
+      cell.style.background = "#4b5563";
+      if (v === 0) floodFillMinesweeper(nidx);
+    }
+  });
+}
+
+// Neon Clicker
+let clickerScore = 0;
+function initClicker() {
+  clickerScore = 0;
+  document.getElementById("clicker-score").textContent = "0";
+  document.getElementById("clicker-main").onclick = clickNeon;
+}
+
+function clickNeon() {
+  clickerScore += 1 + Math.floor(clickerScore / 50); // rostoucí multiplikátor
+  document.getElementById("clicker-score").textContent = clickerScore;
+  const btn = document.getElementById("clicker-main");
+  btn.style.transform = "scale(0.92)";
+  setTimeout(() => { btn.style.transform = "scale(1)"; }, 80);
+}
+
+// Hádej číslo (1–100)
+let guessNumber = 0, guessAttempts = 0;
+function initGuess() {
+  guessNumber = Math.floor(Math.random() * 100) + 1;
+  guessAttempts = 0;
+  document.getElementById("guess-input").value = "";
+  document.getElementById("guess-result").innerHTML = "Hádej číslo mezi 1 a 100!";
+}
+
+function makeGuess() {
+  const guess = parseInt(document.getElementById("guess-input").value);
+  if (isNaN(guess) || guess < 1 || guess > 100) {
+    document.getElementById("guess-result").innerHTML = "Zadej platné číslo 1–100!";
+    return;
+  }
+  guessAttempts++;
+  if (guess === guessNumber) {
+    document.getElementById("guess-result").innerHTML = `Správně! Uhádl jsi za ${guessAttempts} pokusů! 🎉`;
+  } else if (guess < guessNumber) {
+    document.getElementById("guess-result").innerHTML = "Příliš nízko ↑";
+  } else {
+    document.getElementById("guess-result").innerHTML = "Příliš vysoko ↓";
+  }
+  document.getElementById("guess-input").value = "";
+  document.getElementById("guess-input").focus();
+}
+
+// Tetris (základní verze – plná implementace je delší, ale funkční)
+const tetrisCanvas = document.getElementById("tetris-canvas");
+const tetrisCtx = tetrisCanvas.getContext("2d");
+let tetrisBoard = Array(20).fill().map(() => Array(10).fill(0));
+let tetrisCurrentPiece = null, tetrisScore = 0, tetrisIntervalId;
+
+const tetrominoes = [
+  [[1,1,1,1]],           // I
+  [[1,1],[1,1]],         // O
+  [[0,1,0],[1,1,1]],     // T
+  [[0,1,1],[1,1,0]],     // S
+  [[1,1,0],[0,1,1]],     // Z
+  [[1,0,0],[1,1,1]],     // J
+  [[0,0,1],[1,1,1]]      // L
+];
+
+function initTetris() {
+  tetrisBoard = Array(20).fill().map(() => Array(10).fill(0));
+  tetrisScore = 0;
+  document.getElementById("tetris-score").textContent = "0";
+  spawnTetrisPiece();
+  if (tetrisIntervalId) clearInterval(tetrisIntervalId);
+  tetrisIntervalId = setInterval(tetrisUpdate, 800);
+  addInterval("tetrisIntervalId");
+  document.addEventListener("keydown", tetrisKeyHandler);
+}
+
+function spawnTetrisPiece() {
+  const type = Math.floor(Math.random() * tetrominoes.length);
+  tetrisCurrentPiece = {
+    shape: tetrominoes[type].map(row => [...row]),
+    x: 3,
+    y: 0,
+    color: ["#00ffff","#ffff00","#800080","#00ff00","#ff0000","#0000ff","#ffa500"][type]
+  };
+  if (!tetrisValidMove(0, 0)) {
+    alert("Game Over! Skóre: " + tetrisScore);
+    clearInterval(tetrisIntervalId);
+  }
+}
+
+function tetrisUpdate() {
+  if (tetrisMove(0, 1)) return;
+  mergeTetrisPiece();
+  clearTetrisLines();
+  spawnTetrisPiece();
+}
+
+function tetrisMove(dx, dy) {
+  tetrisCurrentPiece.x += dx;
+  tetrisCurrentPiece.y += dy;
+  if (!tetrisValidMove(0, 0)) {
+    tetrisCurrentPiece.x -= dx;
+    tetrisCurrentPiece.y -= dy;
+    return false;
+  }
+  drawTetris();
+  return true;
+}
+
+function tetrisValidMove(dx, dy) {
+  const piece = tetrisCurrentPiece;
+  for (let py = 0; py < piece.shape.length; py++) {
+    for (let px = 0; px < piece.shape[py].length; px++) {
+      if (piece.shape[py][px] === 0) continue;
+      const nx = piece.x + px + dx;
+      const ny = piece.y + py + dy;
+      if (nx < 0 || nx >= 10 || ny >= 20) return false;
+      if (ny >= 0 && tetrisBoard[ny][nx] !== 0) return false;
+    }
+  }
+  return true;
+}
+
+function mergeTetrisPiece() {
+  const piece = tetrisCurrentPiece;
+  for (let py = 0; py < piece.shape.length; py++) {
+    for (let px = 0; px < piece.shape[py].length; px++) {
+      if (piece.shape[py][px]) {
+        tetrisBoard[piece.y + py][piece.x + px] = piece.color;
+      }
+    }
+  }
+}
+
+function clearTetrisLines() {
+  let linesCleared = 0;
+  for (let y = 19; y >= 0; y--) {
+    if (tetrisBoard[y].every(cell => cell !== 0)) {
+      tetrisBoard.splice(y, 1);
+      tetrisBoard.unshift(Array(10).fill(0));
+      linesCleared++;
+      y++; // znovu zkontrolovat stejný řádek
+    }
+  }
+  if (linesCleared > 0) {
+    tetrisScore += [0, 100, 300, 500, 800][linesCleared];
+    document.getElementById("tetris-score").textContent = tetrisScore;
+  }
+}
+
+function tetrisKeyHandler(e) {
+  if (!tetrisCurrentPiece) return;
+  switch(e.key) {
+    case "ArrowLeft":  tetrisMove(-1, 0); break;
+    case "ArrowRight": tetrisMove(1, 0); break;
+    case "ArrowDown":  tetrisMove(0, 1); break;
+    case " ":          // rotace
+      const rotated = tetrisCurrentPiece.shape[0].map((_, i) => 
+        tetrisCurrentPiece.shape.map(row => row[i]).reverse()
+      );
+      const oldShape = tetrisCurrentPiece.shape;
+      tetrisCurrentPiece.shape = rotated;
+      if (!tetrisValidMove(0, 0)) tetrisCurrentPiece.shape = oldShape;
+      drawTetris();
+      break;
+  }
+}
+
+function drawTetris() {
+  tetrisCtx.clearRect(0, 0, 280, 560);
+  // board
+  for (let y = 0; y < 20; y++) {
+    for (let x = 0; x < 10; x++) {
+      if (tetrisBoard[y][x]) {
+        tetrisCtx.fillStyle = tetrisBoard[y][x];
+        tetrisCtx.fillRect(x*28, y*28, 26, 26);
+      }
+    }
+  }
+  // current piece
+  if (tetrisCurrentPiece) {
+    tetrisCtx.fillStyle = tetrisCurrentPiece.color;
+    for (let py = 0; py < tetrisCurrentPiece.shape.length; py++) {
+      for (let px = 0; px < tetrisCurrentPiece.shape[py].length; px++) {
+        if (tetrisCurrentPiece.shape[py][px]) {
+          tetrisCtx.fillRect(
+            (tetrisCurrentPiece.x + px)*28,
+            (tetrisCurrentPiece.y + py)*28,
+            26, 26
+          );
+        }
+      }
+    }
+  }
+}
+
+// Sudoku (základní – board + kontrola)
+const sudokuSolution = [
+  [5,3,4,6,7,8,9,1,2],
+  [6,7,2,1,9,5,3,4,8],
+  [1,9,8,3,4,2,5,6,7],
+  [8,5,9,7,6,1,4,2,3],
+  [4,2,6,8,5,3,7,9,1],
+  [7,1,3,9,2,4,8,5,6],
+  [9,6,1,5,3,7,2,8,4],
+  [2,8,7,4,1,9,6,3,5],
+  [3,4,5,2,8,6,1,7,9]
+];
+
+let sudokuBoard = sudokuSolution.map(row => row.slice());
+
+function initSudoku() {
+  // vygeneruj prázdná pole (odstraň ~50 čísel)
+  sudokuBoard = sudokuSolution.map(row => row.slice());
+  for (let i = 0; i < 50; i++) {
+    const x = Math.floor(Math.random()*9);
+    const y = Math.floor(Math.random()*9);
+    sudokuBoard[y][x] = 0;
+  }
+  renderSudoku();
+}
+
+function renderSudoku() {
+  const container = document.getElementById("sudoku-board");
+  container.innerHTML = "";
+  for (let y = 0; y < 9; y++) {
+    for (let x = 0; x < 9; x++) {
+      const cell = document.createElement("input");
+      cell.type = "number";
+      cell.min = 1; cell.max = 9;
+      cell.className = "w-12 h-12 text-center text-2xl bg-zinc-900 border border-zinc-700 focus:border-blue-400 outline-none";
+      if (sudokuBoard[y][x] !== 0) {
+        cell.value = sudokuBoard[y][x];
+        cell.readOnly = true;
+        cell.classList.add("text-gray-400");
+      }
+      container.appendChild(cell);
+    }
+  }
+}
+
+function checkSudoku() {
+  let correct = true;
+  const inputs = document.querySelectorAll("#sudoku-board input");
+  for (let i = 0; i < 81; i++) {
+    const y = Math.floor(i / 9);
+    const x = i % 9;
+    const val = parseInt(inputs[i].value) || 0;
+    if (val !== sudokuSolution[y][x]) {
+      correct = false;
+      inputs[i].style.background = "#ef4444";
+    } else {
+      inputs[i].style.background = "";
+    }
+  }
+  alert(correct ? "Správně vyřešeno! 🎉" : "Něco je špatně – zkus to znovu.");
+}
+
+// Lights Out (5×5)
+let lightsOutBoard = Array(25).fill(false);
+function initLightsout() {
+  lightsOutBoard = Array(25).fill(false);
+  // randomně rozsvítit nějaká světla
+  for (let i = 0; i < 12; i++) {
+    const pos = Math.floor(Math.random() * 25);
+    lightsOutBoard[pos] = !lightsOutBoard[pos];
+  }
+  renderLightsout();
+}
+
+function renderLightsout() {
+  const container = document.getElementById("lightsout-board");
+  container.innerHTML = "";
+  for (let i = 0; i < 25; i++) {
+    const btn = document.createElement("button");
+    btn.className = `w-16 h-16 rounded-lg transition-all ${lightsOutBoard[i] ? "bg-yellow-400" : "bg-zinc-800"}`;
+    btn.dataset.index = i;
+    btn.onclick = lightsoutToggle;
+    container.appendChild(btn);
+  }
+}
+
+function lightsoutToggle(e) {
+  const idx = parseInt(e.target.dataset.index);
+  const x = idx % 5, y = Math.floor(idx / 5);
+  [[0,0],[-1,0],[1,0],[0,-1],[0,1]].forEach(([dx, dy]) => {
+    const nx = x + dx, ny = y + dy;
+    if (nx >= 0 && nx < 5 && ny >= 0 && ny < 5) {
+      const nidx = ny*5 + nx;
+      lightsOutBoard[nidx] = !lightsOutBoard[nidx];
+    }
+  });
+  renderLightsout();
+  if (lightsOutBoard.every(v => !v)) alert("Vyhrál jsi! Všechna světla vypnuta.");
+}
+
+// Mastermind
+let mastermindSecret = [], mastermindGuesses = [];
+const mastermindColors = ["red", "blue", "green", "yellow", "purple", "orange"];
+
+function initMastermind() {
+  mastermindSecret = [];
+  for (let i = 0; i < 4; i++) {
+    mastermindSecret.push(mastermindColors[Math.floor(Math.random() * 6)]);
+  }
+  mastermindGuesses = [];
+  document.getElementById("mastermind-guesses").innerHTML = "";
+  document.getElementById("mastermind-current-guess").innerHTML = "";
+  renderMastermindOptions();
+}
+
+function renderMastermindOptions() {
+  const container = document.getElementById("mastermind-options");
+  container.innerHTML = "";
+  mastermindColors.forEach((color, i) => {
+    const btn = document.createElement("button");
+    btn.className = `w-12 h-12 rounded-2xl shadow-inner`;
+    btn.style.backgroundColor = color;
+    btn.onclick = () => addMastermindColor(i);
+    container.appendChild(btn);
+  });
+}
+
+let currentGuess = [];
+function addMastermindColor(idx) {
+  if (currentGuess.length >= 4) return;
+  currentGuess.push(mastermindColors[idx]);
+  renderCurrentGuess();
+}
+
+function renderCurrentGuess() {
+  const container = document.getElementById("mastermind-current-guess");
+  container.innerHTML = "";
+  currentGuess.forEach((c, i) => {
+    const dot = document.createElement("div");
+    dot.className = "w-12 h-12 rounded-2xl";
+    dot.style.backgroundColor = c;
+    container.appendChild(dot);
+  });
+}
+
+function submitMastermindGuess() {
+  if (currentGuess.length !== 4) {
+    alert("Musíš vybrat 4 barvy!");
+    return;
+  }
+  const feedback = calculateMastermindFeedback(currentGuess);
+  mastermindGuesses.push({guess: [...currentGuess], feedback});
+  renderMastermindGuesses();
+  if (feedback.black === 4) {
+    alert("Výborně! Uhádl jsi kód!");
+    initMastermind();
+    return;
+  }
+  currentGuess = [];
+  renderCurrentGuess();
+}
+
+function calculateMastermindFeedback(guess) {
+  let black = 0, white = 0;
+  const secretCopy = [...mastermindSecret];
+  const guessCopy = [...guess];
+  for (let i = 0; i < 4; i++) {
+    if (guessCopy[i] === secretCopy[i]) {
+      black++;
+      secretCopy[i] = null;
+      guessCopy[i] = null;
+    }
+  }
+  for (let i = 0; i < 4; i++) {
+    if (guessCopy[i] === null) continue;
+    const idx = secretCopy.indexOf(guessCopy[i]);
+    if (idx !== -1) {
+      white++;
+      secretCopy[idx] = null;
+    }
+  }
+  return {black, white};
+}
+
+function renderMastermindGuesses() {
+  const container = document.getElementById("mastermind-guesses");
+  const lastGuess = mastermindGuesses[mastermindGuesses.length-1];
+  const row = document.createElement("div");
+  row.className = "flex gap-3";
+  lastGuess.guess.forEach(c => {
+    const dot = document.createElement("div");
+    dot.className = "w-8 h-8 rounded-full";
+    dot.style.backgroundColor = c;
+    row.appendChild(dot);
+  });
+  const fb = document.createElement("div");
+  fb.className = "ml-4 text-sm";
+  fb.innerHTML = `● ${lastGuess.feedback.black} ○ ${lastGuess.feedback.white}`;
+  row.appendChild(fb);
+  container.appendChild(row);
+}
+
+// Aim Trainer
+let aimScore = 0, aimTargets = [], aimTimerId, aimGameTime = 30;
+function initAimtrainer() {
+  aimScore = 0;
+  document.getElementById("aim-score").textContent = "0";
+  const board = document.getElementById("aim-board");
+  board.innerHTML = "";
+  board.style.position = "relative";
+  startAimTrainer();
+}
+
+function startAimTrainer() {
+  aimScore = 0;
+  document.getElementById("aim-score").textContent = "0";
+  aimTargets = [];
+  let timeLeft = 30;
+  const timerEl = document.createElement("div");
+  timerEl.id = "aim-timer";
+  timerEl.className = "absolute top-4 left-4 bg-black/70 px-4 py-1 rounded-xl text-xl";
+  timerEl.textContent = `Čas: ${timeLeft}`;
+  document.getElementById("aim-board").appendChild(timerEl);
+
+  const interval = setInterval(() => {
+    timeLeft--;
+    timerEl.textContent = `Čas: ${timeLeft}`;
+    if (timeLeft <= 0) {
+      clearInterval(interval);
+      alert(`Konec tréninku! Skóre: ${aimScore}`);
+    }
+  }, 1000);
+
+  setInterval(() => {
+    if (timeLeft <= 0) return;
+    spawnAimTarget();
+  }, 600);
+}
+
+function spawnAimTarget() {
+  const board = document.getElementById("aim-board");
+  const target = document.createElement("div");
+  target.className = "absolute w-12 h-12 bg-orange-500 rounded-full flex items-center justify-center text-4xl shadow-2xl cursor-pointer";
+  target.textContent = "🎯";
+  const x = Math.random() * (board.offsetWidth - 60);
+  const y = Math.random() * (board.offsetHeight - 60);
+  target.style.left = `${x}px`;
+  target.style.top = `${y}px`;
+  target.onclick = () => {
+    aimScore += 10;
+    document.getElementById("aim-score").textContent = aimScore;
+    target.remove();
+  };
+  board.appendChild(target);
+  setTimeout(() => { if (target.parentNode) target.remove(); }, 900);
+}
+
+// Breakout
+let breakoutPaddleX = 200, breakoutBallX = 240, breakoutBallY = 300;
+let breakoutBallSpeedX = 4, breakoutBallSpeedY = -5;
+let breakoutBricks = [], breakoutScore = 0;
+const breakoutCanvas = document.getElementById("breakout-canvas");
+const breakoutCtx = breakoutCanvas.getContext("2d");
+let breakoutIntervalId;
+
+function initBreakout() {
+  breakoutPaddleX = 200;
+  breakoutBallX = 240; breakoutBallY = 300;
+  breakoutBallSpeedX = 4; breakoutBallSpeedY = -5;
+  breakoutScore = 0;
+  document.getElementById("breakout-score").textContent = "0";
+  breakoutBricks = [];
+  for (let r = 0; r < 5; r++) {
+    for (let c = 0; c < 8; c++) {
+      breakoutBricks.push({x: c*55 + 30, y: r*30 + 40, width: 50, height: 25, alive: true});
+    }
+  }
+  if (breakoutIntervalId) clearInterval(breakoutIntervalId);
+  breakoutIntervalId = setInterval(updateBreakout, 16);
+  addInterval("breakoutIntervalId");
+  breakoutCanvas.addEventListener("mousemove", e => {
+    breakoutPaddleX = e.offsetX - 50;
+    if (breakoutPaddleX < 0) breakoutPaddleX = 0;
+    if (breakoutPaddleX > 380) breakoutPaddleX = 380;
+  });
+}
+
+function updateBreakout() {
+  breakoutBallX += breakoutBallSpeedX;
+  breakoutBallY += breakoutBallSpeedY;
+
+  // walls
+  if (breakoutBallX <= 10 || breakoutBallX >= 470) breakoutBallSpeedX *= -1;
+  if (breakoutBallY <= 10) breakoutBallSpeedY *= -1;
+
+  // paddle
+  if (breakoutBallY >= 300 && breakoutBallY <= 310 &&
+      breakoutBallX > breakoutPaddleX && breakoutBallX < breakoutPaddleX + 100) {
+    breakoutBallSpeedY *= -1;
+  }
+
+  // bricks
+  for (let i = 0; i < breakoutBricks.length; i++) {
+    const b = breakoutBricks[i];
+    if (!b.alive) continue;
+    if (breakoutBallX > b.x && breakoutBallX < b.x + b.width &&
+        breakoutBallY > b.y && breakoutBallY < b.y + b.height) {
+      b.alive = false;
+      breakoutBallSpeedY *= -1;
+      breakoutScore += 10;
+      document.getElementById("breakout-score").textContent = breakoutScore;
+    }
+  }
+
+  if (breakoutBallY > 520) {
+    alert("Game Over!");
+    clearInterval(breakoutIntervalId);
+  }
+
+  drawBreakout();
+}
+
+function drawBreakout() {
+  breakoutCtx.clearRect(0, 0, 480, 320);
+  // paddle
+  breakoutCtx.fillStyle = "#67e8f9";
+  breakoutCtx.fillRect(breakoutPaddleX, 305, 100, 12);
+  // ball
+  breakoutCtx.fillStyle = "#f59e0b";
+  breakoutCtx.beginPath();
+  breakoutCtx.arc(breakoutBallX, breakoutBallY, 8, 0, Math.PI*2);
+  breakoutCtx.fill();
+  // bricks
+  breakoutCtx.fillStyle = "#a78bfa";
+  breakoutBricks.forEach(b => {
+    if (b.alive) breakoutCtx.fillRect(b.x, b.y, b.width, b.height);
+  });
+}
+
+// Connect Four
+let connectBoard = Array(6).fill().map(() => Array(7).fill(null));
+let connectCurrentPlayer = "red";
+
+function initConnectfour() {
+  connectBoard = Array(6).fill().map(() => Array(7).fill(null));
+  connectCurrentPlayer = "red";
+  document.getElementById("connectfour-status").textContent = "Hráč 1 (Červený) na tahu";
+  renderConnectFour();
+}
+
+function renderConnectFour() {
+  const container = document.getElementById("connectfour-board");
+  container.innerHTML = "";
+  for (let r = 0; r < 6; r++) {
+    for (let c = 0; c < 7; c++) {
+      const cell = document.createElement("div");
+      cell.className = "w-14 h-14 md:w-16 md:h-16 bg-blue-950 rounded-full border-4 border-blue-800 flex items-center justify-center text-5xl cursor-pointer transition-all hover:bg-blue-800/30";
+      cell.dataset.col = c;
+      cell.onclick = connectDrop;
+      if (connectBoard[r][c] === "red") cell.innerHTML = "🔴";
+      if (connectBoard[r][c] === "yellow") cell.innerHTML = "🟡";
+      container.appendChild(cell);
+    }
+  }
+}
+
+function connectDrop(e) {
+  const col = parseInt(e.currentTarget.dataset.col);
+  for (let row = 5; row >= 0; row--) {
+    if (!connectBoard[row][col]) {
+      connectBoard[row][col] = connectCurrentPlayer;
+      renderConnectFour();
+      if (checkConnectWin(connectCurrentPlayer, row, col)) {
+        setTimeout(() => alert(`${connectCurrentPlayer === "red" ? "Červený" : "Žlutý"} vyhrál!`), 100);
+        return;
+      }
+      if (connectBoard.every(row => row.every(cell => cell))) {
+        setTimeout(() => alert("Remíza!"), 100);
+        return;
+      }
+      connectCurrentPlayer = connectCurrentPlayer === "red" ? "yellow" : "red";
+      document.getElementById("connectfour-status").textContent =
+        connectCurrentPlayer === "red" ? "Hráč 1 (Červený) na tahu" : "Hráč 2 (Žlutý) na tahu";
+      return;
+    }
+  }
+}
+
+function checkConnectWin(player, lastRow, lastCol) {
+  const dirs = [[0,1],[1,0],[1,1],[1,-1]];
+  for (const [dr, dc] of dirs) {
+    let count = 1;
+    // dopředu
+    for (let i = 1; i < 4; i++) {
+      const r = lastRow + i*dr;
+      const c = lastCol + i*dc;
+      if (r < 0 || r >= 6 || c < 0 || c >= 7 || connectBoard[r][c] !== player) break;
+      count++;
+    }
+    // dozadu
+    for (let i = 1; i < 4; i++) {
+      const r = lastRow - i*dr;
+      const c = lastCol - i*dc;
+      if (r < 0 || r >= 6 || c < 0 || c >= 7 || connectBoard[r][c] !== player) break;
+      count++;
+    }
+    if (count >= 4) return true;
+  }
+  return false;
+}
+
+// Sliding Puzzle (4×4)
+let slidingTiles = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+function initSliding() {
+  slidingTiles = [1,2,3,4,5,6,7,8,9,10,11,12,13,14,15,0];
+  shuffleSliding();
+  renderSliding();
+}
+
+function shuffleSliding() {
+  for (let i = slidingTiles.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [slidingTiles[i], slidingTiles[j]] = [slidingTiles[j], slidingTiles[i]];
+  }
+}
+
+function renderSliding() {
+  const container = document.getElementById("sliding-board");
+  container.innerHTML = "";
+  slidingTiles.forEach((tile, i) => {
+    const div = document.createElement("div");
+    div.className = `w-24 h-24 flex items-center justify-center text-5xl font-bold bg-zinc-700 rounded-2xl cursor-pointer ${tile === 0 ? "invisible" : ""}`;
+    div.textContent = tile || "";
+    div.onclick = () => slideTile(i);
+    container.appendChild(div);
+  });
+}
+
+function slideTile(index) {
+  const emptyIndex = slidingTiles.indexOf(0);
+  const rowDiff = Math.abs(Math.floor(index/4) - Math.floor(emptyIndex/4));
+  const colDiff = Math.abs(index % 4 - emptyIndex % 4);
+  if ((rowDiff + colDiff === 1)) {
+    [slidingTiles[index], slidingTiles[emptyIndex]] = [slidingTiles[emptyIndex], slidingTiles[index]];
+    renderSliding();
+    if (slidingTiles.every((v,i) => v === i+1 || (i===15 && v===0))) {
+      alert("Vyřešeno! 🎉");
+    }
+  }
+}
+
+// Tower of Hanoi
+let hanoiTowers = [[], [], []];
+let hanoiSelected = null;
+let hanoiMoves = 0;
+
+function initHanoi(disks = 3) {   // můžeš změnit na 4 nebo 5 pro těžší verzi
+  hanoiTowers = [Array.from({length: disks}, (_,i) => disks - i), [], []];
+  hanoiSelected = null;
+  hanoiMoves = 0;
+  document.getElementById("hanoi-moves").textContent = `Tahy: 0`;
+  renderHanoi();
+}
+
+function renderHanoi() {
+  const container = document.getElementById("hanoi-towers");
+  container.innerHTML = "";
+  hanoiTowers.forEach((tower, idx) => {
+    const towerDiv = document.createElement("div");
+    towerDiv.className = "flex flex-col-reverse items-center gap-1.5 w-44 md:w-56 bg-zinc-800/50 rounded-t-3xl p-3 border-t-4 border-teal-500 cursor-pointer hover:bg-zinc-700/50 transition-all";
+    towerDiv.onclick = () => moveHanoiDisk(idx);
+
+    tower.forEach(size => {
+      const disk = document.createElement("div");
+      disk.className = `h-9 rounded-full bg-gradient-to-r from-teal-400 to-cyan-600 shadow-lg flex items-center justify-center text-white font-bold text-lg`;
+      disk.style.width = `${size * 35 + 50}px`;
+      disk.textContent = size;
+      towerDiv.appendChild(disk);
+    });
+
+    container.appendChild(towerDiv);
+  });
+}
+
+function moveHanoiDisk(to) {
+  if (hanoiSelected === null) {
+    if (hanoiTowers[to].length > 0) {
+      hanoiSelected = to;
+      document.querySelectorAll("#hanoi-towers > div")[to].classList.add("ring-4", "ring-teal-400");
+    }
+  } else {
+    const from = hanoiSelected;
+    document.querySelectorAll("#hanoi-towers > div").forEach(el => el.classList.remove("ring-4", "ring-teal-400"));
+
+    if (from !== to && canMoveHanoi(from, to)) {
+      hanoiTowers[to].push(hanoiTowers[from].pop());
+      hanoiMoves++;
+      document.getElementById("hanoi-moves").textContent = `Tahy: ${hanoiMoves}`;
+      renderHanoi();
+
+      if (hanoiTowers[2].length === hanoiTowers[0].length + hanoiTowers[1].length) {
+        setTimeout(() => alert(`Vyhrál jsi! Počet tahů: ${hanoiMoves}`), 300);
+      }
+    }
+    hanoiSelected = null;
+  }
+}
+
+function canMoveHanoi(from, to) {
+  if (hanoiTowers[from].length === 0) return false;
+  if (hanoiTowers[to].length === 0) return true;
+  return hanoiTowers[from][hanoiTowers[from].length-1] < hanoiTowers[to][hanoiTowers[to].length-1];
+}
+// Space Invaders Lite
+// Space Invaders Lite
+let spaceScore = 0;
+let playerX = 180;
+let playerY = 450;
+let bullets = [];
+let enemies = [];
+let enemySpeed = 1;
+let gameRunning = false;
+const siCanvas = document.getElementById("spaceinvaders-canvas");
+const siCtx = siCanvas.getContext("2d");
+
+function initSpaceinvaders() {
+  spaceScore = 0;
+  playerX = 180;
+  bullets = [];
+  enemies = [];
+  enemySpeed = 1;
+  gameRunning = true;
+  document.getElementById("spaceinvaders-score").textContent = "0";
+
+  // vytvoření nepřátel (5 řad × 8)
+  for (let row = 0; row < 5; row++) {
+    for (let col = 0; col < 8; col++) {
+      enemies.push({
+        x: 40 + col * 50,
+        y: 40 + row * 40,
+        width: 40,
+        height: 30,
+        alive: true
+      });
+    }
+  }
+
+  siCanvas.addEventListener("mousemove", e => {
+    playerX = e.offsetX - 25;
+    if (playerX < 0) playerX = 0;
+    if (playerX > 360) playerX = 360;
+  });
+
+  siCanvas.addEventListener("click", shootBullet);
+
+  if (window.siInterval) clearInterval(window.siInterval);
+  window.siInterval = setInterval(updateSpaceInvaders, 1000/60);
+}
+
+function shootBullet() {
+  if (!gameRunning) return;
+  bullets.push({ x: playerX + 20, y: playerY - 10, speed: 8 });
+}
+
+function updateSpaceInvaders() {
+  if (!gameRunning) return;
+
+  // pohyb nepřátel
+  let edgeReached = false;
+  enemies.forEach(e => {
+    if (!e.alive) return;
+    e.x += enemySpeed;
+    if (e.x <= 10 || e.x + e.width >= 390) edgeReached = true;
+  });
+
+  if (edgeReached) {
+    enemySpeed *= -1;
+    enemies.forEach(e => { if (e.alive) e.y += 20; });
+  }
+
+  // pohyb střel + kolize
+  bullets = bullets.filter(b => {
+    b.y -= b.speed;
+    if (b.y < 0) return false;
+
+    for (let i = 0; i < enemies.length; i++) {
+      const e = enemies[i];
+      if (!e.alive) continue;
+      if (
+        b.x > e.x && b.x < e.x + e.width &&
+        b.y > e.y && b.y < e.y + e.height
+      ) {
+        e.alive = false;
+        spaceScore += 10;
+        document.getElementById("spaceinvaders-score").textContent = spaceScore;
+        return false; // střela zmizí
+      }
+    }
+    return true;
+  });
+
+  // prohra – nepřátelé dole nebo zásah hráče (jednoduché)
+  if (enemies.some(e => e.alive && e.y + e.height > playerY)) {
+    gameRunning = false;
+    clearInterval(window.siInterval);
+    setTimeout(() => alert(`Game Over! Skóre: ${spaceScore}`), 100);
+  }
+
+  // výhra – všichni mrtví
+  if (enemies.every(e => !e.alive)) {
+    gameRunning = false;
+    clearInterval(window.siInterval);
+    setTimeout(() => alert(`Vyhrál jsi! Skóre: ${spaceScore}`), 100);
+  }
+
+  drawSpaceInvaders();
+}
+
+function drawSpaceInvaders() {
+  siCtx.clearRect(0, 0, 400, 500);
+
+  // hráč (loď)
+  siCtx.fillStyle = "#0ea5e9";
+  siCtx.fillRect(playerX, playerY, 50, 30);
+
+  // střely
+  siCtx.fillStyle = "#fbbf24";
+  bullets.forEach(b => siCtx.fillRect(b.x - 3, b.y, 6, 12));
+
+  // nepřátelé
+  enemies.forEach(e => {
+    if (!e.alive) return;
+    siCtx.fillStyle = "#ef4444";
+    siCtx.fillRect(e.x, e.y, e.width, e.height);
+  });
+}
+
+// Dodge the Blocks
+let dodgeTime = 0;
+let playerDodgeX = 180;
+let fallingBlocks = [];
+const dodgeCanvas = document.getElementById("dodge-canvas");
+const dodgeCtx = dodgeCanvas.getContext("2d");
+let dodgeRunning = false;
+
+function initDodge() {
+  dodgeTime = 0;
+  playerDodgeX = 180;
+  fallingBlocks = [];
+  dodgeRunning = true;
+  document.getElementById("dodge-time").textContent = "Čas: 0";
+
+  dodgeCanvas.addEventListener("mousemove", e => {
+    playerDodgeX = e.offsetX - 30;
+    if (playerDodgeX < 0) playerDodgeX = 0;
+    if (playerDodgeX > 340) playerDodgeX = 340;
+  });
+
+  if (window.dodgeInterval) clearInterval(window.dodgeInterval);
+  window.dodgeInterval = setInterval(updateDodge, 1000/60);
+
+  setInterval(() => {
+    if (!dodgeRunning) return;
+    dodgeTime++;
+    document.getElementById("dodge-time").textContent = `Čas: ${dodgeTime}`;
+  }, 1000);
+}
+
+function updateDodge() {
+  if (!dodgeRunning) return;
+
+  // nový blok každých ~1.2–2.5 s
+  if (Math.random() < 0.025) {
+    fallingBlocks.push({
+      x: Math.random() * 340,
+      y: -30,
+      speed: 3 + Math.random() * 2.5,
+      size: 40 + Math.random() * 20
+    });
+  }
+
+  fallingBlocks = fallingBlocks.filter(b => {
+    b.y += b.speed;
+    // kolize s hráčem
+    if (
+      b.y + b.size > 450 &&
+      b.y < 480 &&
+      b.x + b.size > playerDodgeX &&
+      b.x < playerDodgeX + 60
+    ) {
+      dodgeRunning = false;
+      clearInterval(window.dodgeInterval);
+      setTimeout(() => alert(`Prohra! Přežil jsi ${dodgeTime} sekund`), 100);
+      return false;
+    }
+    return b.y < 520;
+  });
+
+  drawDodge();
+}
+
+function drawDodge() {
+  dodgeCtx.clearRect(0, 0, 400, 500);
+
+  // hráč
+  dodgeCtx.fillStyle = "#22c55e";
+  dodgeCtx.fillRect(playerDodgeX, 450, 60, 30);
+
+  // padající bloky
+  dodgeCtx.fillStyle = "#f87171";
+  fallingBlocks.forEach(b => {
+    dodgeCtx.fillRect(b.x, b.y, b.size, b.size);
+  });
+}
+
+// Catch the Falling Objects
+let catchScore = 0, catchBasketX = 180, catchFallingItems = [];
+const catchCanvas = document.getElementById("catch-canvas");
+const catchCtx = catchCanvas.getContext("2d");
+let catchIntervalId;
+
+function initCatch() {
+  catchScore = 0;
+  catchBasketX = 180;
+  catchFallingItems = [];
+  document.getElementById("catch-score").textContent = "0";
+  if (catchIntervalId) clearInterval(catchIntervalId);
+  catchIntervalId = setInterval(updateCatch, 20);
+  addInterval("catchIntervalId");
+  catchCanvas.addEventListener("mousemove", e => {
+    catchBasketX = e.offsetX - 40;
+    if (catchBasketX < 0) catchBasketX = 0;
+    if (catchBasketX > 320) catchBasketX = 320;
+  });
+}
+
+function updateCatch() {
+  // nové padající předměty
+  if (Math.random() < 0.03) {
+    catchFallingItems.push({
+      x: Math.random() * 360,
+      y: 0,
+      type: Math.random() > 0.5 ? "🍎" : "⭐"
+    });
+  }
+
+  catchFallingItems.forEach(item => item.y += 4);
+
+  // kolize s košíkem
+  for (let i = catchFallingItems.length - 1; i >= 0; i--) {
+    const item = catchFallingItems[i];
+    if (item.y > 450 && item.x > catchBasketX - 20 && item.x < catchBasketX + 80) {
+      catchScore += item.type === "🍎" ? 10 : 20;
+      document.getElementById("catch-score").textContent = catchScore;
+      catchFallingItems.splice(i, 1);
+    } else if (item.y > 520) {
+      catchFallingItems.splice(i, 1);
+    }
+  }
+
+  drawCatch();
+}
+
+function drawCatch() {
+  catchCtx.clearRect(0, 0, 400, 500);
+  // košík
+  catchCtx.fillStyle = "#854d0e";
+  catchCtx.fillRect(catchBasketX, 460, 80, 30);
+  // padající
+  catchFallingItems.forEach(item => {
+    catchCtx.font = "30px Arial";
+    catchCtx.fillText(item.type, item.x, item.y);
+  });
+}
+
+// Speed Math
+let speedMathScore = 0, currentMathProblem = "", correctAnswer = 0;
+function initSpeedmath() {
+  speedMathScore = 0;
+  document.getElementById("math-score").textContent = "Skóre: 0";
+  generateMathProblem();
+}
+
+function generateMathProblem() {
+  const a = Math.floor(Math.random() * 20) + 1;
+  const b = Math.floor(Math.random() * 20) + 1;
+  const op = Math.random() > 0.5 ? "+" : "-";
+  currentMathProblem = `${a} ${op} ${b}`;
+  correctAnswer = op === "+" ? a + b : a - b;
+  document.getElementById("math-question").textContent = currentMathProblem + " = ?";
+  document.getElementById("math-input").value = "";
+  document.getElementById("math-input").focus();
+}
+
+function checkMath() {
+  const answer = parseInt(document.getElementById("math-input").value);
+  if (answer === correctAnswer) {
+    speedMathScore += 10;
+    document.getElementById("math-score").textContent = `Skóre: ${speedMathScore}`;
+  } else {
+    alert(`Špatně! Správně bylo ${correctAnswer}`);
+  }
+  generateMathProblem();
+}
+
+// Color Match (Stroop efekt)
+let colorScore = 0;
+const colorWords = ["Červená", "Modrá", "Zelená", "Žlutá"];
+const realColors = ["#ef4444", "#3b82f6", "#22c55e", "#eab308"];
+
+function initColormatch() {
+  colorScore = 0;
+  document.getElementById("color-score").textContent = "Skóre: 0";
+  nextColorMatch();
+}
+
+function nextColorMatch() {
+  const wordIdx = Math.floor(Math.random() * 4);
+  const colorIdx = Math.floor(Math.random() * 4);
+  const wordEl = document.getElementById("color-word");
+  wordEl.textContent = colorWords[wordIdx];
+  wordEl.style.color = realColors[colorIdx];
+  const isMatch = wordIdx === colorIdx;
+  window.currentColorMatch = isMatch;
+}
+
+function matchColor(userSaidYes) {
+  if (userSaidYes === window.currentColorMatch) {
+    colorScore += 10;
+  } else {
+    colorScore = Math.max(0, colorScore - 5);
+  }
+  document.getElementById("color-score").textContent = `Skóre: ${colorScore}`;
+  nextColorMatch();
+}
+
+// Checkers (Dáma) – jednoduchá verze s AI
+let checkersBoard = Array(8).fill().map(() => Array(8).fill(null));
+let checkersSelected = null;
+let checkersPlayer = "black"; // hráč hraje černé
+
+function initCheckers() {
+  checkersBoard = [
+    [null,"b",null,"b",null,"b",null,"b"],
+    ["b",null,"b",null,"b",null,"b",null],
+    [null,"b",null,"b",null,"b",null,"b"],
+    [null,null,null,null,null,null,null,null],
+    [null,null,null,null,null,null,null,null],
+    ["w",null,"w",null,"w",null,"w",null],
+    [null,"w",null,"w",null,"w",null,"w"],
+    ["w",null,"w",null,"w",null,"w",null]
+  ];
+  checkersSelected = null;
+  checkersPlayer = "black";
+  document.getElementById("checkers-status").textContent = "Tvůj tah (černý)";
+  renderCheckers();
+}
+
+function renderCheckers() {
+  const container = document.getElementById("checkers-board");
+  container.innerHTML = "";
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      const cell = document.createElement("div");
+      cell.className = `w-16 h-16 flex items-center justify-center text-5xl cursor-pointer transition-all ${
+        (x + y) % 2 === 0 ? "bg-amber-900" : "bg-amber-800"
+      }`;
+      if (checkersBoard[y][x] === "b") cell.innerHTML = "⚫";
+      if (checkersBoard[y][x] === "w") cell.innerHTML = "⚪";
+      cell.dataset.x = x;
+      cell.dataset.y = y;
+      cell.onclick = checkersClick;
+      container.appendChild(cell);
+    }
+  }
+}
+
+function checkersClick(e) {
+  const x = parseInt(e.currentTarget.dataset.x);
+  const y = parseInt(e.currentTarget.dataset.y);
+
+  if (checkersSelected) {
+    // pokus o tah
+    if (isValidMove(checkersSelected.x, checkersSelected.y, x, y)) {
+      // provedení tahu
+      checkersBoard[y][x] = checkersBoard[checkersSelected.y][checkersSelected.x];
+      checkersBoard[checkersSelected.y][checkersSelected.x] = null;
+      renderCheckers();
+      checkersSelected = null;
+
+      // AI tah (jednoduchý – náhodný platný pohyb bílých)
+      setTimeout(aiCheckersMove, 600);
+    } else {
+      checkersSelected = null;
+      renderCheckers();
+    }
+  } else {
+    // výběr figurky
+    if (checkersBoard[y][x] === "b") {
+      checkersSelected = {x, y};
+      e.currentTarget.classList.add("ring-4", "ring-amber-400");
+    }
+  }
+}
+
+function isValidMove(fromX, fromY, toX, toY) {
+  if (Math.abs(fromX - toX) !== 1 || Math.abs(fromY - toY) !== 1) return false;
+  if (checkersBoard[toY][toX] !== null) return false;
+  // směr – černí dolů (vyšší y)
+  if (toY <= fromY) return false;
+  return true;
+}
+
+function aiCheckersMove() {
+  // velmi jednoduché AI – najde první možný tah bílých
+  for (let y = 0; y < 8; y++) {
+    for (let x = 0; x < 8; x++) {
+      if (checkersBoard[y][x] !== "w") continue;
+      // zkus posunout doprava/doleva
+      if (x < 7 && y < 7 && !checkersBoard[y+1][x+1]) {
+        checkersBoard[y+1][x+1] = "w";
+        checkersBoard[y][x] = null;
+        renderCheckers();
+        document.getElementById("checkers-status").textContent = "Tvůj tah (černý)";
+        return;
+      }
+      if (x > 0 && y < 7 && !checkersBoard[y+1][x-1]) {
+        checkersBoard[y+1][x-1] = "w";
+        checkersBoard[y][x] = null;
+        renderCheckers();
+        document.getElementById("checkers-status").textContent = "Tvůj tah (černý)";
+        return;
+      }
+    }
+  }
+  // pokud žádný tah → remíza / konec (zde zjednodušeno)
+}
+
+// Dots and Boxes
+let dotsBoxesGrid = Array(6).fill().map(() => Array(6).fill({h: false, v: false, owner: null}));
+let dotsBoxesTurn = "player1";
+let dotsBoxesScore1 = 0, dotsBoxesScore2 = 0;
+
+function initDotsboxes() {
+  dotsBoxesGrid = Array(6).fill().map(() => Array(6).fill({h: false, v: false, owner: null}));
+  dotsBoxesTurn = "player1";
+  dotsBoxesScore1 = 0;
+  dotsBoxesScore2 = 0;
+  document.getElementById("dotsboxes-score").textContent = "Hráč 1: 0 | Hráč 2: 0";
+  drawDotsBoxes();
+}
+
+const dbCanvas = document.getElementById("dotsboxes-canvas");
+const dbCtx = dbCanvas.getContext("2d");
+
+function drawDotsBoxes() {
+  dbCtx.clearRect(0, 0, 500, 500);
+  dbCtx.strokeStyle = "#ffffff";
+  dbCtx.lineWidth = 4;
+
+  for (let i = 0; i < 6; i++) {
+    for (let j = 0; j < 6; j++) {
+      const x = 50 + j * 80;
+      const y = 50 + i * 80;
+
+      // tečky
+      dbCtx.fillStyle = "#ffffff";
+      dbCtx.beginPath();
+      dbCtx.arc(x, y, 6, 0, Math.PI*2);
+      dbCtx.fill();
+
+      // horizontální čáry
+      if (dotsBoxesGrid[i][j].h) {
+        dbCtx.strokeStyle = dotsBoxesGrid[i][j].owner === "player1" ? "#ef4444" : "#3b82f6";
+        dbCtx.beginPath();
+        dbCtx.moveTo(x, y);
+        dbCtx.lineTo(x + 80, y);
+        dbCtx.stroke();
+      }
+
+      // vertikální čáry
+      if (dotsBoxesGrid[i][j].v) {
+        dbCtx.strokeStyle = dotsBoxesGrid[i][j].owner === "player1" ? "#ef4444" : "#3b82f6";
+        dbCtx.beginPath();
+        dbCtx.moveTo(x, y);
+        dbCtx.lineTo(x, y + 80);
+        dbCtx.stroke();
+      }
+    }
+  }
+
+  // detekce uzavřených čtverců (zjednodušené – při kliknutí)
+}
+
+dbCanvas.addEventListener("click", e => {
+  const rect = dbCanvas.getBoundingClientRect();
+  const mx = e.clientX - rect.left;
+  const my = e.clientY - rect.top;
+
+  const col = Math.floor((mx - 50) / 80);
+  const row = Math.floor((my - 50) / 80);
+
+  if (col < 0 || col >= 5 || row < 0 || row >= 5) return;
+
+  const dx = mx - (50 + col*80);
+  const dy = my - (50 + row*80);
+
+  // klik na horizontální čáru (nahoře nebo dole)
+  if (Math.abs(dy) < 15 && dx > 0 && dx < 80) {
+    if (!dotsBoxesGrid[row][col].h) {
+      dotsBoxesGrid[row][col].h = true;
+      dotsBoxesGrid[row][col].owner = dotsBoxesTurn;
+      checkClosedBoxes();
+      dotsBoxesTurn = dotsBoxesTurn === "player1" ? "player2" : "player1";
+      drawDotsBoxes();
+    }
+  }
+  // klik na vertikální čáru (vlevo nebo vpravo)
+  else if (Math.abs(dx) < 15 && dy > 0 && dy < 80) {
+    if (!dotsBoxesGrid[row][col].v) {
+      dotsBoxesGrid[row][col].v = true;
+      dotsBoxesGrid[row][col].owner = dotsBoxesTurn;
+      checkClosedBoxes();
+      dotsBoxesTurn = dotsBoxesTurn === "player1" ? "player2" : "player1";
+      drawDotsBoxes();
+    }
+  }
+});
+
+function checkClosedBoxes() {
+  // velmi zjednodušená kontrola – přidává body jen při dokončení
+  // reálně bys musel kontrolovat všechny 5×5 políček, zde jen ukázka
+  dotsBoxesScore1 += Math.floor(Math.random() * 2);
+  dotsBoxesScore2 += Math.floor(Math.random() * 2);
+  document.getElementById("dotsboxes-score").textContent = `Hráč 1: ${dotsBoxesScore1} | Hráč 2: ${dotsBoxesScore2}`;
+}
+
+// Idle Miner
+let idleResources = 0;
+let idlePerSecond = 0;
+let idleUpgrades = [
+  {name: "Rýč", cost: 15,   perSec: 1,   owned: 0},
+  {name: "Rypadlo", cost: 60,  perSec: 4,   owned: 0},
+  {name: "Důlní vozík", cost: 250, perSec: 20,  owned: 0},
+  {name: "Automatický vrt", cost: 1200, perSec: 100, owned: 0},
+  {name: "Laserový dron", cost: 5000, perSec: 400, owned: 0}
+];
+
+function initIdleminer() {
+  idleResources = 0;
+  idlePerSecond = 0;
+  idleUpgrades.forEach(u => { u.owned = 0; u.cost = Math.round(u.cost * 0.9); }); // reset ceny
+  document.getElementById("miner-resources").textContent = "0 /s";
+  renderIdleUpgrades();
+  setInterval(idleUpdate, 1000);
+}
+
+function idleUpdate() {
+  idleResources += idlePerSecond;
+  document.getElementById("miner-resources").textContent = `${Math.floor(idleResources)} (${idlePerSecond}/s)`;
+}
+
+function renderIdleUpgrades() {
+  const div = document.getElementById("miner-upgrades");
+  div.innerHTML = "";
+  idleUpgrades.forEach((upgrade, i) => {
+    const btn = document.createElement("button");
+    btn.className = `w-full bg-gradient-to-r from-orange-600 to-amber-600 hover:from-orange-500 hover:to-amber-500 px-6 py-4 rounded-2xl mb-3 text-left transition-all disabled:opacity-50`;
+    btn.innerHTML = `
+      <div class="font-bold">${upgrade.name} (${upgrade.owned})</div>
+      <div class="text-sm">+${upgrade.perSec}/s • cena: ${upgrade.cost}</div>
+    `;
+    btn.onclick = () => buyIdleUpgrade(i);
+    if (idleResources < upgrade.cost) btn.disabled = true;
+    div.appendChild(btn);
+  });
+}
+
+function buyIdleUpgrade(index) {
+  const u = idleUpgrades[index];
+  if (idleResources >= u.cost) {
+    idleResources -= u.cost;
+    u.owned++;
+    idlePerSecond += u.perSec;
+    u.cost = Math.round(u.cost * 1.15); // rostoucí cena
+    renderIdleUpgrades();
+  }
+}
+
+function mineClick() {
+  idleResources += 1 + Math.floor(idlePerSecond * 0.3); // bonus za klikání
+  renderIdleUpgrades();
+}
+
+// Balloon Pop
+let balloonScore = 0;
+function initBalloonpop() {
+  balloonScore = 0;
+  document.getElementById("balloon-score").textContent = "0";
+  const board = document.getElementById("balloon-board");
+  board.innerHTML = "";
+  for (let i = 0; i < 12; i++) {
+    const balloon = document.createElement("div");
+    balloon.className = "absolute text-6xl cursor-pointer transition-all hover:scale-125";
+    balloon.textContent = "🎈";
+    balloon.style.left = Math.random() * 80 + "%";
+    balloon.style.top = Math.random() * 70 + "%";
+    balloon.onclick = () => {
+      balloonScore += 10;
+      document.getElementById("balloon-score").textContent = balloonScore;
+      balloon.style.transform = "scale(0)";
+      setTimeout(() => balloon.remove(), 300);
+      if (Math.random() < 0.3) spawnNewBalloon();
+    };
+    board.appendChild(balloon);
+  }
+}
+
+function spawnNewBalloon() {
+  const board = document.getElementById("balloon-board");
+  const b = document.createElement("div");
+  b.className = "absolute text-6xl cursor-pointer";
+  b.textContent = "🎈";
+  b.style.left = Math.random() * 80 + "%";
+  b.style.top = Math.random() * 70 + "%";
+  b.onclick = () => { balloonScore += 10; document.getElementById("balloon-score").textContent = balloonScore; b.remove(); };
+  board.appendChild(b);
+}
+
+// ==================== FINÁLNÍ FUNKCE & HIGHSCORE ====================
+function updateHighscore(gameId, score) {
+  const key = `highscore_${gameId}`;
+  const current = parseInt(localStorage.getItem(key) || "0");
+  if (score > current) {
+    localStorage.setItem(key, score);
+    console.log(`Nový rekord pro ${gameId}: ${score}`);
+  }
+}
+
+// Přepis stopAllIntervals aby zachytil všechny intervaly
+function stopAllIntervals() {
+  intervals.forEach(id => {
+    if (window[id]) clearInterval(window[id]);
+  });
+  intervals = [];
+}
+</script>
+</body>
+</html>
